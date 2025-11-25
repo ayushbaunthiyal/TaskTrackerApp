@@ -55,6 +55,13 @@ public class TaskService : ITaskService
 
     public async Task<TaskDto> CreateTaskAsync(CreateTaskDto createTaskDto)
     {
+        // Validate that the user exists
+        var user = await _unitOfWork.Users.GetByIdAsync(createTaskDto.UserId);
+        if (user == null)
+        {
+            throw new KeyNotFoundException($"User with ID {createTaskDto.UserId} not found");
+        }
+
         var task = new TaskItem
         {
             Id = Guid.NewGuid(),

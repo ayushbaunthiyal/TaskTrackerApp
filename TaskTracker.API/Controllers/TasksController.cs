@@ -76,6 +76,7 @@ public class TasksController : ControllerBase
     [HttpPost]
     [ProducesResponseType(typeof(TaskDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<TaskDto>> CreateTask([FromBody] CreateTaskDto createTaskDto)
     {
         if (!ModelState.IsValid)
@@ -83,8 +84,15 @@ public class TasksController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        var createdTask = await _taskService.CreateTaskAsync(createTaskDto);
-        return CreatedAtAction(nameof(GetTaskById), new { id = createdTask.Id }, createdTask);
+        try
+        {
+            var createdTask = await _taskService.CreateTaskAsync(createTaskDto);
+            return CreatedAtAction(nameof(GetTaskById), new { id = createdTask.Id }, createdTask);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
     }
 
     /// <summary>
