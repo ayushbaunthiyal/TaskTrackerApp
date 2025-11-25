@@ -7,12 +7,27 @@ public class DbSeeder
 {
     public static async Task SeedAsync(ApplicationDbContext context)
     {
-        // Check if database already has data
-        if (await context.Users.AnyAsync())
+        // Seed Users (if not already seeded)
+        if (!await context.Users.AnyAsync())
         {
-            return; // Database has been seeded
+            await SeedUsersAsync(context);
         }
 
+        // Seed Tasks (if not already seeded)
+        if (!await context.Tasks.AnyAsync())
+        {
+            await SeedTasksAsync(context);
+        }
+
+        // Seed Attachments (if not already seeded)
+        if (!await context.Attachments.AnyAsync())
+        {
+            await SeedAttachmentsAsync(context);
+        }
+    }
+
+    private static async Task SeedUsersAsync(ApplicationDbContext context)
+    {
         // Seed Users
         var users = new List<User>
         {
@@ -47,6 +62,32 @@ public class DbSeeder
 
         await context.Users.AddRangeAsync(users);
         await context.SaveChangesAsync();
+
+        // Create audit logs for user creation
+        var userAuditLogs = users.Select(u => new AuditLog
+        {
+            Id = Guid.NewGuid(),
+            UserId = u.Id,
+            Action = "Created",
+            EntityType = "User",
+            EntityId = u.Id.ToString(),
+            Timestamp = u.CreatedAt,
+            Details = string.Empty
+        }).ToList();
+
+        await context.AuditLogs.AddRangeAsync(userAuditLogs);
+        await context.SaveChangesAsync();
+    }
+
+    private static async Task SeedTasksAsync(ApplicationDbContext context)
+    {
+        // Get existing users to assign tasks to them
+        var users = await context.Users.OrderBy(u => u.Email).ToListAsync();
+        
+        if (users.Count < 3)
+        {
+            throw new InvalidOperationException("Cannot seed tasks: Not enough users in database. Please seed users first.");
+        }
 
         // Seed Tasks
         var tasks = new List<TaskItem>
@@ -196,6 +237,32 @@ public class DbSeeder
         await context.Tasks.AddRangeAsync(tasks);
         await context.SaveChangesAsync();
 
+        // Create audit logs for task creation
+        var taskAuditLogs = tasks.Select(t => new AuditLog
+        {
+            Id = Guid.NewGuid(),
+            UserId = t.UserId,
+            Action = "Created",
+            EntityType = "TaskItem",
+            EntityId = t.Id.ToString(),
+            Timestamp = t.CreatedAt,
+            Details = string.Empty
+        }).ToList();
+
+        await context.AuditLogs.AddRangeAsync(taskAuditLogs);
+        await context.SaveChangesAsync();
+    }
+
+    private static async Task SeedAttachmentsAsync(ApplicationDbContext context)
+    {
+        // Get existing tasks to attach files to them
+        var tasks = await context.Tasks.OrderBy(t => t.CreatedAt).ToListAsync();
+        
+        if (tasks.Count < 3)
+        {
+            throw new InvalidOperationException("Cannot seed attachments: Not enough tasks in database. Please seed tasks first.");
+        }
+
         // Seed some Attachments
         var attachments = new List<Attachment>
         {
@@ -238,6 +305,21 @@ public class DbSeeder
         };
 
         await context.Attachments.AddRangeAsync(attachments);
+        await context.SaveChangesAsync();
+
+        // Create audit logs for attachment creation
+        var attachmentAuditLogs = attachments.Select(a => new AuditLog
+        {
+            Id = Guid.NewGuid(),
+            UserId = tasks.FirstOrDefault(t => t.Id == a.TaskId)?.UserId,
+            Action = "Created",
+            EntityType = "Attachment",
+            EntityId = a.Id.ToString(),
+            Timestamp = a.UploadedAt,
+            Details = $"{{\"FileName\":\"{a.FileName}\",\"FileSize\":{a.FileSize}}}"
+        }).ToList();
+
+        await context.AuditLogs.AddRangeAsync(attachmentAuditLogs);
         await context.SaveChangesAsync();
     }
 }
