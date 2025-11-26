@@ -15,6 +15,7 @@ public static class DependencyInjection
         services.AddScoped<ITaskService, TaskService>();
         services.AddScoped<IAuditService, AuditService>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IAttachmentService, AttachmentService>();
 
         // Register validators
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);

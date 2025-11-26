@@ -2,11 +2,10 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { taskApi } from '../api/taskApi';
 import { Task, TaskFilters, TaskStatus, TaskPriority } from '../types';
-import { Plus, Search, Filter, LogOut, RotateCcw } from 'lucide-react';
+import { Plus, Search, Filter, LogOut, RotateCcw, Key } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { TaskCard } from './TaskCard';
 import { ConfirmDialog } from './ConfirmDialog';
-import { differenceInHours, parseISO } from 'date-fns';
 import { useAuth } from '../context/AuthContext';
 
 export const TaskList = () => {
@@ -147,6 +146,13 @@ export const TaskList = () => {
             >
               <Plus className="w-5 h-5" />
               New Task
+            </Link>
+            <Link
+              to="/change-password"
+              className="inline-flex items-center gap-2 bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition shadow-sm border border-gray-300"
+            >
+              <Key className="w-5 h-5" />
+              Change Password
             </Link>
             <button
               onClick={handleLogout}

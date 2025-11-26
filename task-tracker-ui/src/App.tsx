@@ -5,6 +5,7 @@ import { Login } from './components/Login';
 import { Register } from './components/Register';
 import { TaskList } from './components/TaskList';
 import { TaskForm } from './components/TaskForm';
+import { ChangePassword } from './components/ChangePassword';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
@@ -36,6 +37,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <TaskForm />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/change-password"
+            element={
+              <ProtectedRoute>
+                <ChangePassword />
               </ProtectedRoute>
             }
           />

@@ -12,4 +12,5 @@ public class TaskDto
     public string[] Tags { get; set; } = Array.Empty<string>();
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
+    public int AttachmentCount { get; set; }
 }

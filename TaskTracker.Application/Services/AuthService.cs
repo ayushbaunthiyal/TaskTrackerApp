@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Configuration;
+using TaskTracker.Application.DTOs;
 using TaskTracker.Application.DTOs.Auth;
 using TaskTracker.Application.Interfaces;
 using TaskTracker.Application.Interfaces.Repositories;
@@ -144,5 +145,26 @@ public class AuthService : IAuthService
                 LastName = user.LastName
             }
         };
+    }
+
+    public async Task ChangePasswordAsync(Guid userId, ChangePasswordDto changePasswordDto)
+    {
+        // Find user
+        var user = await _unitOfWork.Users.GetByIdAsync(userId);
+        if (user == null)
+        {
+            throw new KeyNotFoundException("User not found");
+        }
+
+        // Verify current password
+        if (!BCrypt.Net.BCrypt.Verify(changePasswordDto.CurrentPassword, user.PasswordHash))
+        {
+            throw new UnauthorizedAccessException("Current password is incorrect");
+        }
+
+        // Update password
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(changePasswordDto.NewPassword);
+        await _unitOfWork.Users.UpdateAsync(user);
+        await _unitOfWork.SaveChangesAsync();
     }
 }

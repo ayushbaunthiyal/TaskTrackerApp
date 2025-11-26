@@ -14,6 +14,7 @@ public class AuditLogRepository : Repository<AuditLog>, IAuditLogRepository
     public async Task<IEnumerable<AuditLog>> GetByUserIdAsync(Guid userId)
     {
         return await _dbSet
+            .Include(a => a.User)
             .Where(a => a.UserId == userId)
             .OrderByDescending(a => a.Timestamp)
             .ToListAsync();
@@ -22,6 +23,7 @@ public class AuditLogRepository : Repository<AuditLog>, IAuditLogRepository
     public async Task<IEnumerable<AuditLog>> GetByEntityAsync(string entityType, string entityId)
     {
         return await _dbSet
+            .Include(a => a.User)
             .Where(a => a.EntityType == entityType && a.EntityId == entityId)
             .OrderByDescending(a => a.Timestamp)
             .ToListAsync();

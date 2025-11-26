@@ -1,9 +1,12 @@
 import { useState, useEffect, FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { taskApi } from '../api/taskApi';
+import { attachmentApi, Attachment } from '../api/attachmentApi';
 import { TaskStatus, TaskPriority, TaskFormData } from '../types';
 import { Save, X } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { FileUpload } from './FileUpload';
+import { AuditTrail } from './AuditTrail';
 
 export const TaskForm = () => {
   const { id } = useParams();
@@ -18,6 +21,7 @@ export const TaskForm = () => {
     DueDate: null,
   });
   const [tagInput, setTagInput] = useState('');
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
 
   useEffect(() => {
     if (id) loadTask();
@@ -34,6 +38,10 @@ export const TaskForm = () => {
         Tags: task.tags,
         DueDate: task.dueDate ? task.dueDate.split('T')[0] : null,
       });
+      
+      // Load attachments
+      const taskAttachments = await attachmentApi.getTaskAttachments(id!);
+      setAttachments(taskAttachments);
     } catch (error) {
       toast.error('Failed to load task');
       navigate('/tasks');
@@ -209,6 +217,14 @@ export const TaskForm = () => {
                 ))}
               </div>
             </div>
+
+            <FileUpload
+              taskId={id || null}
+              attachments={attachments}
+              onAttachmentsChange={setAttachments}
+            />
+
+            <AuditTrail taskId={id || null} />
 
             <div className="flex gap-4 pt-4">
               <button

@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { Task, TaskStatus, TaskPriority } from '../types';
-import { Calendar, Tag, Trash2, Edit, AlertCircle } from 'lucide-react';
+import { Calendar, Tag, Trash2, Edit, AlertCircle, Paperclip } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 
 interface TaskCardProps {
@@ -125,6 +125,13 @@ export const TaskCard = ({ task, onDelete, isOverdue, isDueToday, isDueSoon }: T
         <div className="flex items-center gap-2 text-sm text-gray-500">
           <Calendar className="w-4 h-4" />
           Due: {format(parseISO(task.dueDate), 'MMM dd, yyyy')}
+        </div>
+      )}
+
+      {task.attachmentCount !== undefined && task.attachmentCount > 0 && (
+        <div className="flex items-center gap-2 text-sm text-gray-500 mt-2">
+          <Paperclip className="w-4 h-4" />
+          {task.attachmentCount} attachment{task.attachmentCount > 1 ? 's' : ''}
         </div>
       )}
     </div>

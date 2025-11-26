@@ -48,6 +48,7 @@ export interface Task {
   dueDate: string | null;
   createdAt: string;
   updatedAt: string;
+  attachmentCount?: number;
 }
 
 export interface TaskFormData {

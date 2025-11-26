@@ -11,6 +11,13 @@ public class TaskRepository : Repository<TaskItem>, ITaskRepository
     {
     }
 
+    public override async Task<TaskItem?> GetByIdAsync(Guid id)
+    {
+        return await _dbSet
+            .Include(t => t.Attachments)
+            .FirstOrDefaultAsync(t => t.Id == id);
+    }
+
     public async Task<(IEnumerable<TaskItem> Items, int TotalCount)> GetFilteredTasksAsync(
         string? searchTerm,
         int? status,
@@ -23,7 +30,7 @@ public class TaskRepository : Repository<TaskItem>, ITaskRepository
         int pageNumber,
         int pageSize)
     {
-        var query = _dbSet.AsQueryable();
+        var query = _dbSet.Include(t => t.Attachments).AsQueryable();
 
         // Apply filters (case-insensitive search)
         if (!string.IsNullOrWhiteSpace(searchTerm))

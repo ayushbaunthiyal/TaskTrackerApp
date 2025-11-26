@@ -175,7 +175,8 @@ public class TaskService : ITaskService
             DueDate = task.DueDate,
             Tags = task.Tags,
             CreatedAt = task.CreatedAt,
-            UpdatedAt = task.UpdatedAt
+            UpdatedAt = task.UpdatedAt,
+            AttachmentCount = task.Attachments?.Count ?? 0
         };
     }
 }
