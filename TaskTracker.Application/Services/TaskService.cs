@@ -168,6 +168,7 @@ public class TaskService : ITaskService
         {
             Id = task.Id,
             UserId = task.UserId,
+            UserName = task.User != null ? $"{task.User.FirstName} {task.User.LastName}".Trim() : "Unknown User",
             Title = task.Title,
             Description = task.Description,
             Status = task.Status,

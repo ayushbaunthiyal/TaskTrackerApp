@@ -30,7 +30,7 @@ public class TaskRepository : Repository<TaskItem>, ITaskRepository
         int pageNumber,
         int pageSize)
     {
-        var query = _dbSet.Include(t => t.Attachments).AsQueryable();
+        var query = _dbSet.Include(t => t.Attachments).Include(t => t.User).AsQueryable();
 
         // Apply filters (case-insensitive search)
         if (!string.IsNullOrWhiteSpace(searchTerm))

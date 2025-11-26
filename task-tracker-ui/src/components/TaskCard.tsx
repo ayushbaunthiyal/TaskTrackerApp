@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { Task, TaskStatus, TaskPriority } from '../types';
-import { Calendar, Tag, Trash2, Edit, AlertCircle, Paperclip } from 'lucide-react';
+import { Calendar, Tag, Trash2, Edit, AlertCircle, Paperclip, User } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 
 interface TaskCardProps {
@@ -79,7 +79,13 @@ export const TaskCard = ({ task, onDelete, isOverdue, isDueToday, isDueSoon }: T
       )}
       
       <div className="flex justify-between items-start mb-4">
-        <h3 className="text-lg font-semibold text-gray-900 line-clamp-2 flex-1 pr-2">{task.title}</h3>
+        <div className="flex-1 pr-2">
+          <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">{task.title}</h3>
+          <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
+            <User className="w-3 h-3" />
+            <span>{task.userName}</span>
+          </div>
+        </div>
         <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
           <Link
             to={`/tasks/edit/${task.id}`}

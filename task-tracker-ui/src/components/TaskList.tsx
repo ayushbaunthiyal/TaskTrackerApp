@@ -289,17 +289,31 @@ export const TaskList = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
-                <select
-                  value={filters.sortBy ?? 'DueDate'}
-                  onChange={(e) => setFilters({ ...filters, sortBy: e.target.value, pageNumber: 1 })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                >
-                  <option value="DueDate">Due Date</option>
-                  <option value="CreatedAt">Created Date</option>
-                  <option value="UpdatedAt">Updated Date</option>
-                  <option value="Priority">Priority</option>
-                  <option value="Status">Status</option>
-                </select>
+                <div className="flex gap-2">
+                  <select
+                    value={filters.sortBy ?? 'DueDate'}
+                    onChange={(e) => setFilters({ ...filters, sortBy: e.target.value, pageNumber: 1 })}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                  >
+                    <option value="DueDate">Due Date</option>
+                    <option value="CreatedAt">Created Date</option>
+                    <option value="UpdatedAt">Updated Date</option>
+                    <option value="Priority">Priority</option>
+                    <option value="Status">Status</option>
+                    <option value="Title">Title</option>
+                  </select>
+                  <button
+                    onClick={() => setFilters({ ...filters, sortDescending: !filters.sortDescending, pageNumber: 1 })}
+                    className={`px-3 py-2 border rounded-lg transition ${
+                      filters.sortDescending 
+                        ? 'bg-indigo-600 text-white border-indigo-600' 
+                        : 'border-gray-300 hover:bg-gray-50'
+                    }`}
+                    title={filters.sortDescending ? 'Descending' : 'Ascending'}
+                  >
+                    {filters.sortDescending ? '↓' : '↑'}
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -335,23 +349,101 @@ export const TaskList = () => {
             </div>
 
             {totalPages > 1 && (
-              <div className="flex justify-center gap-2 mt-8">
+              <div className="flex justify-center items-center gap-2 mt-8 flex-wrap">
+                <button
+                  onClick={() => setFilters({ ...filters, pageNumber: 1 })}
+                  disabled={filters.pageNumber === 1}
+                  className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-indigo-50 hover:border-indigo-300 transition"
+                >
+                  First
+                </button>
                 <button
                   onClick={() => setFilters({ ...filters, pageNumber: filters.pageNumber - 1 })}
                   disabled={filters.pageNumber === 1}
-                  className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                  className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-indigo-50 hover:border-indigo-300 transition"
                 >
                   Previous
                 </button>
-                <span className="px-4 py-2 text-gray-700">
-                  Page {filters.pageNumber} of {totalPages}
-                </span>
+                
+                {/* Page numbers */}
+                <div className="flex gap-1">
+                  {(() => {
+                    const pages = [];
+                    const showPages = 5; // Number of page buttons to show
+                    let startPage = Math.max(1, filters.pageNumber - Math.floor(showPages / 2));
+                    let endPage = Math.min(totalPages, startPage + showPages - 1);
+                    
+                    // Adjust start if we're near the end
+                    if (endPage - startPage < showPages - 1) {
+                      startPage = Math.max(1, endPage - showPages + 1);
+                    }
+                    
+                    // Show first page if not in range
+                    if (startPage > 1) {
+                      pages.push(
+                        <button
+                          key={1}
+                          onClick={() => setFilters({ ...filters, pageNumber: 1 })}
+                          className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-indigo-50 hover:border-indigo-300 transition"
+                        >
+                          1
+                        </button>
+                      );
+                      if (startPage > 2) {
+                        pages.push(<span key="ellipsis1" className="px-2 py-2">...</span>);
+                      }
+                    }
+                    
+                    // Show page numbers in range
+                    for (let i = startPage; i <= endPage; i++) {
+                      pages.push(
+                        <button
+                          key={i}
+                          onClick={() => setFilters({ ...filters, pageNumber: i })}
+                          className={`px-3 py-2 border rounded-lg transition ${
+                            filters.pageNumber === i
+                              ? 'bg-indigo-600 text-white border-indigo-600'
+                              : 'border-gray-300 hover:bg-indigo-50 hover:border-indigo-300'
+                          }`}
+                        >
+                          {i}
+                        </button>
+                      );
+                    }
+                    
+                    // Show last page if not in range
+                    if (endPage < totalPages) {
+                      if (endPage < totalPages - 1) {
+                        pages.push(<span key="ellipsis2" className="px-2 py-2">...</span>);
+                      }
+                      pages.push(
+                        <button
+                          key={totalPages}
+                          onClick={() => setFilters({ ...filters, pageNumber: totalPages })}
+                          className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-indigo-50 hover:border-indigo-300 transition"
+                        >
+                          {totalPages}
+                        </button>
+                      );
+                    }
+                    
+                    return pages;
+                  })()}
+                </div>
+
                 <button
                   onClick={() => setFilters({ ...filters, pageNumber: filters.pageNumber + 1 })}
                   disabled={filters.pageNumber === totalPages}
-                  className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                  className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-indigo-50 hover:border-indigo-300 transition"
                 >
                   Next
+                </button>
+                <button
+                  onClick={() => setFilters({ ...filters, pageNumber: totalPages })}
+                  disabled={filters.pageNumber === totalPages}
+                  className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-indigo-50 hover:border-indigo-300 transition"
+                >
+                  Last
                 </button>
               </div>
             )}
