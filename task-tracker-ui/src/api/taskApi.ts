@@ -8,6 +8,9 @@ export const taskApi = {
     if (filters.searchTerm) params.append('searchTerm', filters.searchTerm);
     if (filters.status !== undefined) params.append('status', filters.status.toString());
     if (filters.priority !== undefined) params.append('priority', filters.priority.toString());
+    if (filters.tag) params.append('tag', filters.tag);
+    if (filters.dueDateFrom) params.append('dueDateFrom', filters.dueDateFrom);
+    if (filters.dueDateTo) params.append('dueDateTo', filters.dueDateTo);
     if (filters.sortBy) params.append('sortBy', filters.sortBy);
     if (filters.sortDescending !== undefined) params.append('sortDescending', filters.sortDescending.toString());
     params.append('pageNumber', filters.pageNumber.toString());

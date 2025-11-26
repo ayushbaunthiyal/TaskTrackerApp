@@ -76,6 +76,9 @@ export interface TaskFilters {
   searchTerm?: string;
   status?: TaskStatus;
   priority?: TaskPriority;
+  tag?: string;
+  dueDateFrom?: string;
+  dueDateTo?: string;
   sortBy?: string;
   sortDescending?: boolean;
   pageNumber: number;

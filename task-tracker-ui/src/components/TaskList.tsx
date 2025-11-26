@@ -256,63 +256,98 @@ export const TaskList = () => {
           </div>
 
           {showFilters && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 pt-4 border-t">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                <select
-                  value={filters.status ?? ''}
-                  onChange={(e) => setFilters({ ...filters, status: e.target.value ? Number(e.target.value) : undefined, pageNumber: 1 })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                >
-                  <option value="">All</option>
-                  <option value={TaskStatus.Pending}>Pending</option>
-                  <option value={TaskStatus.InProgress}>In Progress</option>
-                  <option value={TaskStatus.Completed}>Completed</option>
-                  <option value={TaskStatus.Cancelled}>Cancelled</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
-                <select
-                  value={filters.priority ?? ''}
-                  onChange={(e) => setFilters({ ...filters, priority: e.target.value ? Number(e.target.value) : undefined, pageNumber: 1 })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                >
-                  <option value="">All</option>
-                  <option value={TaskPriority.Low}>Low</option>
-                  <option value={TaskPriority.Medium}>Medium</option>
-                  <option value={TaskPriority.High}>High</option>
-                  <option value={TaskPriority.Critical}>Critical</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
-                <div className="flex gap-2">
+            <div className="space-y-4 mt-4 pt-4 border-t">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
                   <select
-                    value={filters.sortBy ?? 'DueDate'}
-                    onChange={(e) => setFilters({ ...filters, sortBy: e.target.value, pageNumber: 1 })}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                    value={filters.status ?? ''}
+                    onChange={(e) => setFilters({ ...filters, status: e.target.value ? Number(e.target.value) : undefined, pageNumber: 1 })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
                   >
-                    <option value="DueDate">Due Date</option>
-                    <option value="CreatedAt">Created Date</option>
-                    <option value="UpdatedAt">Updated Date</option>
-                    <option value="Priority">Priority</option>
-                    <option value="Status">Status</option>
-                    <option value="Title">Title</option>
+                    <option value="">All</option>
+                    <option value={TaskStatus.Pending}>Pending</option>
+                    <option value={TaskStatus.InProgress}>In Progress</option>
+                    <option value={TaskStatus.Completed}>Completed</option>
+                    <option value={TaskStatus.Cancelled}>Cancelled</option>
                   </select>
-                  <button
-                    onClick={() => setFilters({ ...filters, sortDescending: !filters.sortDescending, pageNumber: 1 })}
-                    className={`px-3 py-2 border rounded-lg transition ${
-                      filters.sortDescending 
-                        ? 'bg-indigo-600 text-white border-indigo-600' 
-                        : 'border-gray-300 hover:bg-gray-50'
-                    }`}
-                    title={filters.sortDescending ? 'Descending' : 'Ascending'}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+                  <select
+                    value={filters.priority ?? ''}
+                    onChange={(e) => setFilters({ ...filters, priority: e.target.value ? Number(e.target.value) : undefined, pageNumber: 1 })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
                   >
-                    {filters.sortDescending ? '↓' : '↑'}
-                  </button>
+                    <option value="">All</option>
+                    <option value={TaskPriority.Low}>Low</option>
+                    <option value={TaskPriority.Medium}>Medium</option>
+                    <option value={TaskPriority.High}>High</option>
+                    <option value={TaskPriority.Critical}>Critical</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Tag</label>
+                  <input
+                    type="text"
+                    placeholder="Filter by tag..."
+                    value={filters.tag ?? ''}
+                    onChange={(e) => setFilters({ ...filters, tag: e.target.value || undefined, pageNumber: 1 })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Due Date From</label>
+                  <input
+                    type="date"
+                    value={filters.dueDateFrom ?? ''}
+                    onChange={(e) => setFilters({ ...filters, dueDateFrom: e.target.value || undefined, pageNumber: 1 })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Due Date To</label>
+                  <input
+                    type="date"
+                    value={filters.dueDateTo ?? ''}
+                    onChange={(e) => setFilters({ ...filters, dueDateTo: e.target.value || undefined, pageNumber: 1 })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
+                  <div className="flex gap-2">
+                    <select
+                      value={filters.sortBy ?? 'DueDate'}
+                      onChange={(e) => setFilters({ ...filters, sortBy: e.target.value, pageNumber: 1 })}
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                    >
+                      <option value="DueDate">Due Date</option>
+                      <option value="CreatedAt">Created Date</option>
+                      <option value="UpdatedAt">Updated Date</option>
+                      <option value="Priority">Priority</option>
+                      <option value="Status">Status</option>
+                      <option value="Title">Title</option>
+                    </select>
+                    <button
+                      onClick={() => setFilters({ ...filters, sortDescending: !filters.sortDescending, pageNumber: 1 })}
+                      className={`px-3 py-2 border rounded-lg transition ${
+                        filters.sortDescending 
+                          ? 'bg-indigo-600 text-white border-indigo-600' 
+                          : 'border-gray-300 hover:bg-gray-50'
+                      }`}
+                      title={filters.sortDescending ? 'Descending' : 'Ascending'}
+                    >
+                      {filters.sortDescending ? '↓' : '↑'}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

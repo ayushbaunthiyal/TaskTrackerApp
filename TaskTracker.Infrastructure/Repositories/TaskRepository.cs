@@ -52,8 +52,8 @@ public class TaskRepository : Repository<TaskItem>, ITaskRepository
 
         if (!string.IsNullOrWhiteSpace(tag))
         {
-            // PostgreSQL JSONB array contains check
-            query = query.Where(t => t.Tags.Contains(tag));
+            // PostgreSQL JSONB array search with exact match
+            query = query.Where(t => EF.Functions.JsonContains(t.Tags, $"\"{tag}\""));
         }
 
         if (dueDateFrom.HasValue)
