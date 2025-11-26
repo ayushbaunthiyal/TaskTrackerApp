@@ -25,12 +25,12 @@ public class TaskRepository : Repository<TaskItem>, ITaskRepository
     {
         var query = _dbSet.AsQueryable();
 
-        // Apply filters
+        // Apply filters (case-insensitive search)
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
             query = query.Where(t =>
-                t.Title.Contains(searchTerm) ||
-                t.Description.Contains(searchTerm));
+                EF.Functions.ILike(t.Title, $"%{searchTerm}%") ||
+                EF.Functions.ILike(t.Description, $"%{searchTerm}%"));
         }
 
         if (status.HasValue)

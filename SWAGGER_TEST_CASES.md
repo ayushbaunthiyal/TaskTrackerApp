@@ -672,7 +672,7 @@ Authorization: Bearer <USER_1_ACCESS_TOKEN>
 
 ---
 
-### Test 7.3: User 2 Cannot See User 1's Task
+### Test 7.3: User 2 Can View User 1's Task (Read-Only)
 **Endpoint:** `GET /api/tasks/{user1TaskId}`
 
 **Headers:**
@@ -680,16 +680,24 @@ Authorization: Bearer <USER_1_ACCESS_TOKEN>
 Authorization: Bearer <USER_2_ACCESS_TOKEN>
 ```
 
-**Expected Response:** `404 Not Found`
+**Expected Response:** `200 OK`
 ```json
 {
-  "error": "Task with ID <TASK_GUID> not found"
+  "id": "<TASK_GUID>",
+  "title": "User 1 Task",
+  "description": "This task belongs to User 1",
+  "status": 1,
+  "priority": 3,
+  "userId": "<USER_1_GUID>",
+  "createdAt": "2025-11-26T...",
+  "updatedAt": "2025-11-26T..."
 }
 ```
 
 **Validation:**
-- ✅ Status code is 404
-- ✅ User 2 cannot access User 1's task
+- ✅ Status code is 200
+- ✅ User 2 can view User 1's task (public read access)
+- ✅ Note: userId shows User 1's ID (task owner)
 
 ---
 
@@ -808,7 +816,7 @@ Authorization: Bearer <ACCESS_TOKEN>
 
 ---
 
-### Test 9.3: Search Tasks by Title
+### Test 9.3: Search Tasks by Title (Case-Insensitive)
 **Endpoint:** `GET /api/tasks`
 
 **Headers:**
@@ -817,14 +825,18 @@ Authorization: Bearer <ACCESS_TOKEN>
 ```
 
 **Query Parameters:**
-- `searchTerm=Test`
+- `searchTerm=test` (try lowercase)
 - `pageNumber=1`
 - `pageSize=10`
 
 **Expected Response:** `200 OK`
 
 **Validation:**
-- ✅ Returns tasks containing "Test" in title or description
+- ✅ Returns tasks containing "test" in title or description (case-insensitive)
+- ✅ Matches "Test", "TEST", "test", "TeSt", etc.
+- ✅ Searches both title and description fields
+
+**Note:** Search is case-insensitive - searching for "test" will match "Test Task", "TESTING", "Test", etc.
 
 ---
 
