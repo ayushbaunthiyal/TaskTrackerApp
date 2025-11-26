@@ -80,7 +80,7 @@ public class TaskService : ITaskService
         await _unitOfWork.Tasks.AddAsync(task);
         await _unitOfWork.SaveChangesAsync();
 
-        await _auditService.LogActionAsync(task.UserId, "Create", "Task", task.Id.ToString(), 
+        await _auditService.LogActionAsync(task.UserId, "Created", "TaskItem", task.Id.ToString(), 
             $"Created task: {task.Title}");
 
         return MapToDto(task);
@@ -94,6 +94,14 @@ public class TaskService : ITaskService
             throw new KeyNotFoundException($"Task with ID {id} not found");
         }
 
+        // Track changes for audit log
+        var changes = new List<string>();
+        if (task.Title != updateTaskDto.Title) changes.Add($"Title: '{task.Title}' → '{updateTaskDto.Title}'");
+        if (task.Description != updateTaskDto.Description) changes.Add($"Description changed");
+        if (task.Status != updateTaskDto.Status) changes.Add($"Status: {task.Status} → {updateTaskDto.Status}");
+        if (task.Priority != updateTaskDto.Priority) changes.Add($"Priority: {task.Priority} → {updateTaskDto.Priority}");
+        if (task.DueDate != updateTaskDto.DueDate) changes.Add($"DueDate: {task.DueDate} → {updateTaskDto.DueDate}");
+
         task.Title = updateTaskDto.Title;
         task.Description = updateTaskDto.Description;
         task.Status = updateTaskDto.Status;
@@ -105,8 +113,9 @@ public class TaskService : ITaskService
         await _unitOfWork.Tasks.UpdateAsync(task);
         await _unitOfWork.SaveChangesAsync();
 
-        await _auditService.LogActionAsync(task.UserId, "Update", "Task", task.Id.ToString(), 
-            $"Updated task: {task.Title}");
+        var changeDetails = changes.Any() ? string.Join("; ", changes) : "No changes";
+        await _auditService.LogActionAsync(task.UserId, "Updated", "TaskItem", task.Id.ToString(), 
+            changeDetails);
 
         return MapToDto(task);
     }
@@ -125,7 +134,7 @@ public class TaskService : ITaskService
         await _unitOfWork.Tasks.UpdateAsync(task);
         await _unitOfWork.SaveChangesAsync();
 
-        await _auditService.LogActionAsync(task.UserId, "Delete", "Task", task.Id.ToString(), 
+        await _auditService.LogActionAsync(task.UserId, "Deleted", "TaskItem", task.Id.ToString(), 
             $"Deleted task: {task.Title}");
 
         return true;

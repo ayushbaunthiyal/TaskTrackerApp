@@ -27,6 +27,6 @@ public class AuditService : IAuditService
         };
 
         await _unitOfWork.AuditLogs.AddAsync(auditLog);
-        // Note: SaveChanges will be called by the calling service
+        await _unitOfWork.SaveChangesAsync();
     }
 }
