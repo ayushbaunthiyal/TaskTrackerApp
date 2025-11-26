@@ -2,10 +2,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
+using TaskTracker.Application.Interfaces;
 using TaskTracker.Application.Interfaces.Repositories;
 using TaskTracker.Infrastructure.Data;
 using TaskTracker.Infrastructure.Data.Interceptors;
 using TaskTracker.Infrastructure.Repositories;
+using TaskTracker.Infrastructure.Services;
 
 namespace TaskTracker.Infrastructure;
 
@@ -36,9 +38,14 @@ public static class DependencyInjection
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IAuditLogRepository, AuditLogRepository>();
         services.AddScoped<IAttachmentRepository, AttachmentRepository>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
         // Register Unit of Work
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        // Register services
+        services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
 
         return services;
     }

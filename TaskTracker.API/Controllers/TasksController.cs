@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TaskTracker.Application.DTOs;
 using TaskTracker.Application.Interfaces.Services;
 
 namespace TaskTracker.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
@@ -71,11 +73,12 @@ public class TasksController : ControllerBase
     }
 
     /// <summary>
-    /// Create a new task
+    /// Create a new task - UserId automatically set from JWT token
     /// </summary>
     [HttpPost]
     [ProducesResponseType(typeof(TaskDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<TaskDto>> CreateTask([FromBody] CreateTaskDto createTaskDto)
     {
@@ -96,11 +99,13 @@ public class TasksController : ControllerBase
     }
 
     /// <summary>
-    /// Update an existing task
+    /// Update an existing task - Only owner can update
     /// </summary>
     [HttpPut("{id}")]
     [ProducesResponseType(typeof(TaskDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<TaskDto>> UpdateTask(Guid id, [FromBody] UpdateTaskDto updateTaskDto)
     {
@@ -114,6 +119,10 @@ public class TasksController : ControllerBase
             var updatedTask = await _taskService.UpdateTaskAsync(id, updateTaskDto);
             return Ok(updatedTask);
         }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { error = ex.Message });
+        }
         catch (KeyNotFoundException ex)
         {
             return NotFound(new { message = ex.Message });
@@ -121,19 +130,28 @@ public class TasksController : ControllerBase
     }
 
     /// <summary>
-    /// Delete a task (soft delete)
+    /// Delete a task (soft delete) - Only owner can delete
     /// </summary>
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteTask(Guid id)
     {
-        var result = await _taskService.DeleteTaskAsync(id);
-        if (!result)
+        try
         {
-            return NotFound(new { message = $"Task with ID {id} not found" });
-        }
+            var result = await _taskService.DeleteTaskAsync(id);
+            if (!result)
+            {
+                return NotFound(new { message = $"Task with ID {id} not found" });
+            }
 
-        return NoContent();
+            return NoContent();
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { error = ex.Message });
+        }
     }
 }

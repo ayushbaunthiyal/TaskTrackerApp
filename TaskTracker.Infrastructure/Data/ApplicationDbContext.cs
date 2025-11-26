@@ -14,6 +14,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<TaskItem> Tasks { get; set; }
     public DbSet<Attachment> Attachments { get; set; }
     public DbSet<AuditLog> AuditLogs { get; set; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -24,6 +25,7 @@ public class ApplicationDbContext : DbContext
         modelBuilder.ApplyConfiguration(new TaskItemConfiguration());
         modelBuilder.ApplyConfiguration(new AttachmentConfiguration());
         modelBuilder.ApplyConfiguration(new AuditLogConfiguration());
+        modelBuilder.ApplyConfiguration(new RefreshTokenConfiguration());
 
         // Global query filter for soft delete
         modelBuilder.Entity<User>().HasQueryFilter(u => !u.IsDeleted);

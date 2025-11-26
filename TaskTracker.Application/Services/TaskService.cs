@@ -1,4 +1,5 @@
 using TaskTracker.Application.DTOs;
+using TaskTracker.Application.Interfaces;
 using TaskTracker.Application.Interfaces.Repositories;
 using TaskTracker.Application.Interfaces.Services;
 using TaskTracker.Domain.Entities;
@@ -9,11 +10,13 @@ public class TaskService : ITaskService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAuditService _auditService;
+    private readonly ICurrentUserService _currentUserService;
 
-    public TaskService(IUnitOfWork unitOfWork, IAuditService auditService)
+    public TaskService(IUnitOfWork unitOfWork, IAuditService auditService, ICurrentUserService currentUserService)
     {
         _unitOfWork = unitOfWork;
         _auditService = auditService;
+        _currentUserService = currentUserService;
     }
 
     public async Task<PaginatedResponse<TaskDto>> GetFilteredTasksAsync(TaskFilterDto filter)
@@ -55,17 +58,20 @@ public class TaskService : ITaskService
 
     public async Task<TaskDto> CreateTaskAsync(CreateTaskDto createTaskDto)
     {
+        // Get userId from JWT token
+        var userId = _currentUserService.UserId;
+        
         // Validate that the user exists
-        var user = await _unitOfWork.Users.GetByIdAsync(createTaskDto.UserId);
+        var user = await _unitOfWork.Users.GetByIdAsync(userId);
         if (user == null)
         {
-            throw new KeyNotFoundException($"User with ID {createTaskDto.UserId} not found");
+            throw new KeyNotFoundException($"User with ID {userId} not found");
         }
 
         var task = new TaskItem
         {
             Id = Guid.NewGuid(),
-            UserId = createTaskDto.UserId,
+            UserId = userId,
             Title = createTaskDto.Title,
             Description = createTaskDto.Description,
             Status = createTaskDto.Status,
@@ -89,6 +95,14 @@ public class TaskService : ITaskService
     public async Task<TaskDto> UpdateTaskAsync(Guid id, UpdateTaskDto updateTaskDto)
     {
         var task = await _unitOfWork.Tasks.GetByIdAsync(id);
+        
+        // Ownership validation: Check ownership before revealing if task exists (security best practice)
+        var currentUserId = _currentUserService.UserId;
+        if (task != null && task.UserId != currentUserId)
+        {
+            throw new UnauthorizedAccessException("You can only modify your own tasks");
+        }
+        
         if (task == null)
         {
             throw new KeyNotFoundException($"Task with ID {id} not found");
@@ -114,7 +128,7 @@ public class TaskService : ITaskService
         await _unitOfWork.SaveChangesAsync();
 
         var changeDetails = changes.Any() ? string.Join("; ", changes) : "No changes";
-        await _auditService.LogActionAsync(task.UserId, "Updated", "TaskItem", task.Id.ToString(), 
+        await _auditService.LogActionAsync(currentUserId, "Updated", "TaskItem", task.Id.ToString(), 
             changeDetails);
 
         return MapToDto(task);
@@ -123,6 +137,14 @@ public class TaskService : ITaskService
     public async Task<bool> DeleteTaskAsync(Guid id)
     {
         var task = await _unitOfWork.Tasks.GetByIdAsync(id);
+        
+        // Ownership validation: Check ownership before revealing if task exists (security best practice)
+        var currentUserId = _currentUserService.UserId;
+        if (task != null && task.UserId != currentUserId)
+        {
+            throw new UnauthorizedAccessException("You can only modify your own tasks");
+        }
+        
         if (task == null)
         {
             return false;
@@ -134,7 +156,7 @@ public class TaskService : ITaskService
         await _unitOfWork.Tasks.UpdateAsync(task);
         await _unitOfWork.SaveChangesAsync();
 
-        await _auditService.LogActionAsync(task.UserId, "Deleted", "TaskItem", task.Id.ToString(), 
+        await _auditService.LogActionAsync(currentUserId, "Deleted", "TaskItem", task.Id.ToString(), 
             $"Deleted task: {task.Title}");
 
         return true;

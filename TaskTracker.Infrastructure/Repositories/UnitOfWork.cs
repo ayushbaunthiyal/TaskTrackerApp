@@ -13,19 +13,22 @@ public class UnitOfWork : IUnitOfWork
     public IUserRepository Users { get; }
     public IAuditLogRepository AuditLogs { get; }
     public IAttachmentRepository Attachments { get; }
+    public IRefreshTokenRepository RefreshTokens { get; }
 
     public UnitOfWork(
         ApplicationDbContext context,
         ITaskRepository taskRepository,
         IUserRepository userRepository,
         IAuditLogRepository auditLogRepository,
-        IAttachmentRepository attachmentRepository)
+        IAttachmentRepository attachmentRepository,
+        IRefreshTokenRepository refreshTokenRepository)
     {
         _context = context;
         Tasks = taskRepository;
         Users = userRepository;
         AuditLogs = auditLogRepository;
         Attachments = attachmentRepository;
+        RefreshTokens = refreshTokenRepository;
     }
 
     public async Task<int> SaveChangesAsync()

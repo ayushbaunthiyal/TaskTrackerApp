@@ -6,6 +6,7 @@ public interface IUnitOfWork : IDisposable
     IUserRepository Users { get; }
     IAuditLogRepository AuditLogs { get; }
     IAttachmentRepository Attachments { get; }
+    IRefreshTokenRepository RefreshTokens { get; }
     Task<int> SaveChangesAsync();
     Task BeginTransactionAsync();
     Task CommitTransactionAsync();

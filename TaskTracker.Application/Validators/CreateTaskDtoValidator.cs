@@ -7,9 +7,6 @@ public class CreateTaskDtoValidator : AbstractValidator<CreateTaskDto>
 {
     public CreateTaskDtoValidator()
     {
-        RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("UserId is required");
-
         RuleFor(x => x.Title)
             .NotEmpty().WithMessage("Title is required")
             .MaximumLength(200).WithMessage("Title cannot exceed 200 characters");

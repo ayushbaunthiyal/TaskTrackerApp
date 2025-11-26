@@ -2,7 +2,6 @@ namespace TaskTracker.Application.DTOs;
 
 public class CreateTaskDto
 {
-    public Guid UserId { get; set; }
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public TaskTracker.Domain.Enums.TaskStatus Status { get; set; } = TaskTracker.Domain.Enums.TaskStatus.Pending;
