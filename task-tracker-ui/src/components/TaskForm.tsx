@@ -165,6 +165,7 @@ export const TaskForm = () => {
                 type="date"
                 value={formData.DueDate || ''}
                 onChange={(e) => setFormData({ ...formData, DueDate: e.target.value || null })}
+                min={new Date().toISOString().split('T')[0]}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
               />
             </div>

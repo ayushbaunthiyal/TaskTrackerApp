@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { taskApi } from '../api/taskApi';
 import { Task, TaskFilters, TaskStatus, TaskPriority } from '../types';
-import { Plus, Search, Filter, LogOut } from 'lucide-react';
+import { Plus, Search, Filter, LogOut, RotateCcw } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { TaskCard } from './TaskCard';
 import { ConfirmDialog } from './ConfirmDialog';
@@ -14,6 +14,8 @@ export const TaskList = () => {
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<TaskFilters>({
     searchTerm: '',
+    sortBy: 'DueDate',
+    sortDescending: false,
     pageNumber: 1,
     pageSize: 25,
   });
@@ -72,15 +74,51 @@ export const TaskList = () => {
     setDeleteConfirm({ isOpen: false, taskId: null });
   };
 
+  const resetFilters = () => {
+    setFilters({
+      searchTerm: '',
+      sortBy: 'DueDate',
+      sortDescending: false,
+      pageNumber: 1,
+      pageSize: 25,
+    });
+    toast.success('Filters reset');
+  };
+
   const handleLogout = async () => {
     await logout();
     navigate('/login');
   };
 
+  const isOverdue = (dueDate: string | null): boolean => {
+    if (!dueDate) return false;
+    const taskDate = new Date(dueDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    taskDate.setHours(0, 0, 0, 0);
+    return taskDate < today;
+  };
+
+  const isDueToday = (dueDate: string | null): boolean => {
+    if (!dueDate) return false;
+    const taskDate = new Date(dueDate);
+    const today = new Date();
+    taskDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    return taskDate.getTime() === today.getTime();
+  };
+
   const isDueSoon = (dueDate: string | null): boolean => {
     if (!dueDate) return false;
-    const hours = differenceInHours(parseISO(dueDate), new Date());
-    return hours > 0 && hours <= 24;
+    const taskDate = new Date(dueDate);
+    const today = new Date();
+    taskDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const twoDaysFromNow = new Date(today);
+    twoDaysFromNow.setDate(twoDaysFromNow.getDate() + 2);
+    return taskDate >= tomorrow && taskDate <= twoDaysFromNow;
   };
 
   return (
@@ -139,6 +177,14 @@ export const TaskList = () => {
               <Filter className="w-5 h-5" />
               Filters
             </button>
+            <button
+              onClick={resetFilters}
+              className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition text-gray-700"
+              title="Reset all filters"
+            >
+              <RotateCcw className="w-5 h-5" />
+              Reset
+            </button>
           </div>
 
           {showFilters && (
@@ -176,13 +222,13 @@ export const TaskList = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
                 <select
-                  value={filters.sortBy ?? 'CreatedAt'}
+                  value={filters.sortBy ?? 'DueDate'}
                   onChange={(e) => setFilters({ ...filters, sortBy: e.target.value, pageNumber: 1 })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
                 >
+                  <option value="DueDate">Due Date</option>
                   <option value="CreatedAt">Created Date</option>
                   <option value="UpdatedAt">Updated Date</option>
-                  <option value="DueDate">Due Date</option>
                   <option value="Priority">Priority</option>
                   <option value="Status">Status</option>
                 </select>
@@ -205,14 +251,19 @@ export const TaskList = () => {
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {tasks.map((task) => (
-                <TaskCard
-                  key={task.id}
-                  task={task}
-                  onDelete={handleDelete}
-                  isDueSoon={isDueSoon(task.dueDate)}
-                />
-              ))}
+              {tasks.map((task) => {
+                const isActive = task.status !== TaskStatus.Completed && task.status !== TaskStatus.Cancelled;
+                return (
+                  <TaskCard
+                    key={task.id}
+                    task={task}
+                    onDelete={handleDelete}
+                    isOverdue={isActive && isOverdue(task.dueDate)}
+                    isDueToday={isActive && isDueToday(task.dueDate)}
+                    isDueSoon={isActive && isDueSoon(task.dueDate)}
+                  />
+                );
+              })}
             </div>
 
             {totalPages > 1 && (

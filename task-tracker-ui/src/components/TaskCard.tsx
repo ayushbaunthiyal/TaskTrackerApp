@@ -6,10 +6,12 @@ import { format, parseISO } from 'date-fns';
 interface TaskCardProps {
   task: Task;
   onDelete: (id: string) => void;
+  isOverdue: boolean;
+  isDueToday: boolean;
   isDueSoon: boolean;
 }
 
-export const TaskCard = ({ task, onDelete, isDueSoon }: TaskCardProps) => {
+export const TaskCard = ({ task, onDelete, isOverdue, isDueToday, isDueSoon }: TaskCardProps) => {
   const navigate = useNavigate();
 
   const statusColors = {
@@ -40,17 +42,39 @@ export const TaskCard = ({ task, onDelete, isDueSoon }: TaskCardProps) => {
     [TaskPriority.Critical]: 'Critical',
   };
 
+  // Determine border and background based on due date status
+  let cardClasses = 'bg-white rounded-lg shadow-sm hover:shadow-md transition-all p-6 cursor-pointer ';
+  if (isOverdue) {
+    cardClasses += 'border-2 border-red-500 bg-red-50';
+  } else if (isDueToday) {
+    cardClasses += 'border-2 border-orange-500 bg-orange-50';
+  } else if (isDueSoon) {
+    cardClasses += 'border-2 border-yellow-400';
+  } else {
+    cardClasses += 'border border-gray-200';
+  }
+
   return (
     <div 
-      className={`bg-white rounded-lg shadow-sm hover:shadow-md transition-all p-6 cursor-pointer ${
-        isDueSoon ? 'border-2 border-yellow-400' : 'border border-gray-200'
-      }`}
+      className={cardClasses}
       onClick={() => navigate(`/tasks/edit/${task.id}`)}
     >
+      {isOverdue && (
+        <div className="flex items-center gap-2 text-red-700 text-sm font-medium mb-3 bg-red-100 px-3 py-2 rounded">
+          <AlertCircle className="w-4 h-4" />
+          Overdue
+        </div>
+      )}
+      {isDueToday && (
+        <div className="flex items-center gap-2 text-orange-700 text-sm font-medium mb-3 bg-orange-100 px-3 py-2 rounded">
+          <AlertCircle className="w-4 h-4" />
+          Due Today
+        </div>
+      )}
       {isDueSoon && (
         <div className="flex items-center gap-2 text-yellow-700 text-sm font-medium mb-3 bg-yellow-50 px-3 py-2 rounded">
           <AlertCircle className="w-4 h-4" />
-          Due within 24 hours
+          Due Soon
         </div>
       )}
       
