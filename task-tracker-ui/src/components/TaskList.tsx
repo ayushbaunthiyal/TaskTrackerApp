@@ -5,6 +5,7 @@ import { Task, TaskFilters, TaskStatus, TaskPriority } from '../types';
 import { Plus, Search, Filter, LogOut } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { TaskCard } from './TaskCard';
+import { ConfirmDialog } from './ConfirmDialog';
 import { differenceInHours, parseISO } from 'date-fns';
 import { useAuth } from '../context/AuthContext';
 
@@ -18,6 +19,10 @@ export const TaskList = () => {
   });
   const [totalPages, setTotalPages] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; taskId: string | null }>({
+    isOpen: false,
+    taskId: null,
+  });
   const { logout } = useAuth();
   const navigate = useNavigate();
 
@@ -45,16 +50,26 @@ export const TaskList = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this task?')) return;
+    setDeleteConfirm({ isOpen: true, taskId: id });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteConfirm.taskId) return;
     
     try {
-      await taskApi.deleteTask(id);
+      await taskApi.deleteTask(deleteConfirm.taskId);
       toast.success('Task deleted successfully');
+      setDeleteConfirm({ isOpen: false, taskId: null });
       loadTasks();
     } catch (error: any) {
       const message = error.response?.data?.error || 'Failed to delete task';
       toast.error(message);
+      setDeleteConfirm({ isOpen: false, taskId: null });
     }
+  };
+
+  const cancelDelete = () => {
+    setDeleteConfirm({ isOpen: false, taskId: null });
   };
 
   const handleLogout = async () => {
@@ -70,6 +85,17 @@ export const TaskList = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <ConfirmDialog
+        isOpen={deleteConfirm.isOpen}
+        title="Delete Task"
+        message="Are you sure you want to delete this task? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+      />
+      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-8">
           <div>
