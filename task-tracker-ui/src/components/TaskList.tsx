@@ -1,12 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { taskApi } from '../api/taskApi';
 import { Task, TaskFilters, TaskStatus, TaskPriority } from '../types';
-import { Plus, Search, Filter, LogOut, RotateCcw, Key } from 'lucide-react';
+import { Plus, Search, Filter, LogOut, RotateCcw, User, ChevronDown, Key } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { TaskCard } from './TaskCard';
 import { ConfirmDialog } from './ConfirmDialog';
 import { useAuth } from '../context/AuthContext';
+import { getCurrentUser } from '../utils/jwt';
 
 export const TaskList = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -20,16 +21,30 @@ export const TaskList = () => {
   });
   const [totalPages, setTotalPages] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; taskId: string | null }>({
     isOpen: false,
     taskId: null,
   });
   const { logout } = useAuth();
   const navigate = useNavigate();
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  const currentUser = getCurrentUser();
 
   useEffect(() => {
     loadTasks();
   }, [filters]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setShowUserMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const loadTasks = async () => {
     try {
@@ -139,7 +154,7 @@ export const TaskList = () => {
             <h1 className="text-3xl font-bold text-gray-900">Active Tasks</h1>
             <p className="text-gray-600 mt-1">Manage and track Tasks</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-3 items-center">
             <Link
               to="/tasks/new"
               className="inline-flex items-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition shadow-sm"
@@ -147,20 +162,67 @@ export const TaskList = () => {
               <Plus className="w-5 h-5" />
               New Task
             </Link>
-            <Link
-              to="/change-password"
-              className="inline-flex items-center gap-2 bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition shadow-sm border border-gray-300"
-            >
-              <Key className="w-5 h-5" />
-              Change Password
-            </Link>
-            <button
-              onClick={handleLogout}
-              className="inline-flex items-center gap-2 bg-gray-200 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-300 transition shadow-sm"
-            >
-              <LogOut className="w-5 h-5" />
-              Logout
-            </button>
+            
+            {/* User Profile Dropdown */}
+            <div className="relative" ref={userMenuRef}>
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="inline-flex items-center gap-3 bg-white border-2 border-gray-200 px-4 py-2.5 rounded-lg hover:border-indigo-300 hover:bg-indigo-50 transition shadow-sm"
+              >
+                <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center">
+                  <User className="w-5 h-5 text-white" />
+                </div>
+                <div className="text-left hidden md:block">
+                  <p className="text-sm font-semibold text-gray-900">
+                    {currentUser?.firstName} {currentUser?.lastName}
+                  </p>
+                  <p className="text-xs text-gray-500">{currentUser?.email}</p>
+                </div>
+                <ChevronDown className={`w-4 h-4 text-gray-600 transition-transform ${showUserMenu ? 'rotate-180' : ''}`} />
+              </button>
+
+              {/* Dropdown Menu */}
+              {showUserMenu && (
+                <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
+                  {/* User Info Section */}
+                  <div className="px-4 py-3 border-b border-gray-100">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center">
+                        <User className="w-6 h-6 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-gray-900 truncate">
+                          {currentUser?.firstName} {currentUser?.lastName}
+                        </p>
+                        <p className="text-xs text-gray-500 truncate">{currentUser?.email}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Menu Items */}
+                  <div className="py-1">
+                    <Link
+                      to="/change-password"
+                      onClick={() => setShowUserMenu(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition"
+                    >
+                      <Key className="w-4 h-4" />
+                      Change Password
+                    </Link>
+                    <button
+                      onClick={() => {
+                        setShowUserMenu(false);
+                        handleLogout();
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
