@@ -84,6 +84,7 @@ public class AuthService : IAuthService
         // Revoke old refresh token
         tokenEntity.RevokedAt = DateTime.UtcNow;
         await _unitOfWork.RefreshTokens.UpdateAsync(tokenEntity);
+        await _unitOfWork.SaveChangesAsync();
 
         // Generate new tokens
         return await GenerateLoginResponse(user);
@@ -94,12 +95,19 @@ public class AuthService : IAuthService
         var tokenEntity = (await _unitOfWork.RefreshTokens.FindAsync(rt => rt.Token == refreshToken))
             .FirstOrDefault();
 
-        if (tokenEntity != null && tokenEntity.IsActive)
+        if (tokenEntity == null)
         {
-            tokenEntity.RevokedAt = DateTime.UtcNow;
-            await _unitOfWork.RefreshTokens.UpdateAsync(tokenEntity);
-            await _unitOfWork.SaveChangesAsync();
+            throw new InvalidOperationException("Invalid refresh token");
         }
+
+        if (!tokenEntity.IsActive)
+        {
+            throw new InvalidOperationException("Refresh token is already revoked");
+        }
+
+        tokenEntity.RevokedAt = DateTime.UtcNow;
+        await _unitOfWork.RefreshTokens.UpdateAsync(tokenEntity);
+        await _unitOfWork.SaveChangesAsync();
     }
 
     private async Task<LoginResponseDto> GenerateLoginResponse(User user)

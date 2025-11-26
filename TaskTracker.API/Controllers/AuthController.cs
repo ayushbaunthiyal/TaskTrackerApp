@@ -51,6 +51,10 @@ public class AuthController : ControllerBase
         {
             return Unauthorized(new { error = ex.Message });
         }
+        catch (InvalidOperationException ex)
+        {
+            return Unauthorized(new { error = ex.Message });
+        }
     }
 
     /// <summary>
@@ -70,6 +74,10 @@ public class AuthController : ControllerBase
         {
             return Unauthorized(new { error = ex.Message });
         }
+        catch (InvalidOperationException ex)
+        {
+            return Unauthorized(new { error = ex.Message });
+        }
     }
 
     /// <summary>
@@ -79,7 +87,14 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> RevokeToken([FromBody] RefreshTokenDto refreshTokenDto)
     {
-        await _authService.RevokeRefreshTokenAsync(refreshTokenDto.RefreshToken);
-        return NoContent();
+        try
+        {
+            await _authService.RevokeRefreshTokenAsync(refreshTokenDto.RefreshToken);
+            return NoContent();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 }

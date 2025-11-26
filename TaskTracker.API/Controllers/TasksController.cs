@@ -125,7 +125,7 @@ public class TasksController : ControllerBase
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(new { error = ex.Message });
         }
     }
 
@@ -144,7 +144,7 @@ public class TasksController : ControllerBase
             var result = await _taskService.DeleteTaskAsync(id);
             if (!result)
             {
-                return NotFound(new { message = $"Task with ID {id} not found" });
+                return NotFound(new { error = $"Task with ID {id} not found" });
             }
 
             return NoContent();

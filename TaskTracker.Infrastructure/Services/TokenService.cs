@@ -78,7 +78,7 @@ public class TokenService : ITokenService
                 ValidateAudience = !string.IsNullOrEmpty(audience),
                 ValidAudience = audience,
                 ValidateLifetime = true,
-                ClockSkew = TimeSpan.Zero
+                ClockSkew = TimeSpan.FromMinutes(5)
             };
 
             var principal = tokenHandler.ValidateToken(token, validationParameters, out _);
