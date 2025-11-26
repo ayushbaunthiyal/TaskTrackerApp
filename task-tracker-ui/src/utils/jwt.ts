@@ -39,3 +39,13 @@ export const getCurrentUser = (): { email: string; firstName: string; lastName: 
     lastName: payload.family_name,
   };
 };
+
+export const getCurrentUserId = (): string | null => {
+  const token = localStorage.getItem('accessToken');
+  if (!token) return null;
+
+  const payload = decodeJwt(token);
+  if (!payload) return null;
+
+  return payload.sub;
+};

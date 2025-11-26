@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using TaskTracker.Application.DTOs;
 using TaskTracker.Application.Interfaces;
 
@@ -8,6 +9,7 @@ namespace TaskTracker.API.Controllers;
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
+[EnableRateLimiting("PerUserPolicy")]
 public class AttachmentsController : ControllerBase
 {
     private readonly IAttachmentService _attachmentService;
@@ -36,6 +38,7 @@ public class AttachmentsController : ControllerBase
     /// Upload a new attachment to a task
     /// </summary>
     [HttpPost("task/{taskId}")]
+    [EnableRateLimiting("PerIpStrictPolicy")]
     [ProducesResponseType(typeof(AttachmentDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

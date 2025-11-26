@@ -6,8 +6,8 @@ export const taskApi = {
     const params = new URLSearchParams();
     
     if (filters.searchTerm) params.append('searchTerm', filters.searchTerm);
-    if (filters.status !== undefined) params.append('status', filters.status.toString());
-    if (filters.priority !== undefined) params.append('priority', filters.priority.toString());
+    if (filters.status !== undefined && filters.status !== null) params.append('status', filters.status.toString());
+    if (filters.priority !== undefined && filters.priority !== null) params.append('priority', filters.priority.toString());
     if (filters.tag) params.append('tag', filters.tag);
     if (filters.dueDateFrom) params.append('dueDateFrom', filters.dueDateFrom);
     if (filters.dueDateTo) params.append('dueDateTo', filters.dueDateTo);

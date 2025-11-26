@@ -58,6 +58,12 @@ public class AttachmentService : IAttachmentService
             throw new KeyNotFoundException($"Task with ID {taskId} not found");
         }
 
+        // Verify user owns the task
+        if (task.UserId != _currentUserService.UserId)
+        {
+            throw new UnauthorizedAccessException("You can only upload attachments to your own tasks");
+        }
+
         // Generate unique file name
         var fileExtension = Path.GetExtension(fileName);
         var uniqueFileName = $"{Guid.NewGuid()}{fileExtension}";
@@ -121,6 +127,13 @@ public class AttachmentService : IAttachmentService
         if (attachment == null)
         {
             throw new KeyNotFoundException($"Attachment with ID {attachmentId} not found");
+        }
+
+        // Verify user owns the task
+        var task = await _taskRepository.GetByIdAsync(attachment.TaskId);
+        if (task == null || task.UserId != _currentUserService.UserId)
+        {
+            throw new UnauthorizedAccessException("You can only delete attachments from your own tasks");
         }
 
         // Delete file from disk

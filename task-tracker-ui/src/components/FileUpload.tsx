@@ -8,9 +8,10 @@ interface FileUploadProps {
   taskId: string | null;
   attachments: Attachment[];
   onAttachmentsChange: (attachments: Attachment[]) => void;
+  isOwner?: boolean;
 }
 
-export const FileUpload = ({ taskId, attachments, onAttachmentsChange }: FileUploadProps) => {
+export const FileUpload = ({ taskId, attachments, onAttachmentsChange, isOwner = true }: FileUploadProps) => {
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -63,8 +64,12 @@ export const FileUpload = ({ taskId, attachments, onAttachmentsChange }: FileUpl
         onAttachmentsChange([...attachments, attachment]);
         toast.success(`${file.name} uploaded successfully`);
       } catch (error: any) {
-        const message = error.response?.data?.error || `Failed to upload ${file.name}`;
-        toast.error(message);
+        if (error.response?.status === 401 || error.response?.status === 403) {
+          toast.error('You can only upload/delete attachments to your own tasks');
+        } else {
+          const message = error.response?.data?.error || `Failed to upload ${file.name}`;
+          toast.error(message);
+        }
       } finally {
         setUploading(false);
       }
@@ -97,8 +102,12 @@ export const FileUpload = ({ taskId, attachments, onAttachmentsChange }: FileUpl
       onAttachmentsChange(attachments.filter(a => a.id !== attachmentToDelete.id));
       toast.success('Attachment deleted successfully');
     } catch (error: any) {
-      const message = error.response?.data?.error || 'Failed to delete attachment';
-      toast.error(message);
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        toast.error('You can only upload/delete attachments to your own tasks');
+      } else {
+        const message = error.response?.data?.error || 'Failed to delete attachment';
+        toast.error(message);
+      }
     } finally {
       setDeleteDialogOpen(false);
       setAttachmentToDelete(null);
@@ -128,7 +137,13 @@ export const FileUpload = ({ taskId, attachments, onAttachmentsChange }: FileUpl
           dragActive
             ? 'border-indigo-500 bg-indigo-50'
             : 'border-gray-300 hover:border-gray-400'
-        } ${!taskId ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+        } ${!taskId || !isOwner ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+        onDragEnter={isOwner ? handleDrag : undefined}
+        onDragLeave={isOwner ? handleDrag : undefined}
+        onDragOver={isOwner ? handleDrag : undefined}
+        onDrop={isOwner ? handleDrop : undefined}
+        onClick={() => taskId && isOwner && fileInputRef.current?.click()}
+        title={!isOwner ? 'You can only upload/delete attachments to your own tasks' : ''}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
         onDragOver={handleDrag}
@@ -141,12 +156,14 @@ export const FileUpload = ({ taskId, attachments, onAttachmentsChange }: FileUpl
           multiple
           onChange={handleChange}
           className="hidden"
-          disabled={!taskId || uploading}
+          disabled={!taskId || uploading || !isOwner}
         />
         
         <Upload className="w-10 h-10 mx-auto text-gray-400 mb-2" />
         <p className="text-sm text-gray-600">
-          {taskId
+          {!isOwner
+            ? 'You can only upload/delete attachments to your own tasks'
+            : taskId
             ? uploading
               ? 'Uploading...'
               : 'Drag & drop files here, or click to select'
@@ -187,9 +204,14 @@ export const FileUpload = ({ taskId, attachments, onAttachmentsChange }: FileUpl
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleDelete(attachment)}
-                  className="p-2 text-gray-500 hover:text-red-600 transition"
-                  title="Delete"
+                  onClick={() => isOwner && handleDelete(attachment)}
+                  disabled={!isOwner}
+                  className={`p-2 transition ${
+                    isOwner
+                      ? 'text-gray-500 hover:text-red-600 cursor-pointer'
+                      : 'text-gray-300 cursor-not-allowed'
+                  }`}
+                  title={isOwner ? 'Delete' : 'You can only upload/delete attachments to your own tasks'}
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Security.Claims;
 using TaskTracker.Application.DTOs;
 using TaskTracker.Application.DTOs.Auth;
@@ -22,6 +23,7 @@ public class AuthController : ControllerBase
     /// Register a new user
     /// </summary>
     [HttpPost("register")]
+    [EnableRateLimiting("PerIpAuthPolicy")]
     [ProducesResponseType(typeof(LoginResponseDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<LoginResponseDto>> Register([FromBody] RegisterDto registerDto)
@@ -41,6 +43,7 @@ public class AuthController : ControllerBase
     /// Login with email and password
     /// </summary>
     [HttpPost("login")]
+    [EnableRateLimiting("PerIpAuthPolicy")]
     [ProducesResponseType(typeof(LoginResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<LoginResponseDto>> Login([FromBody] LoginDto loginDto)

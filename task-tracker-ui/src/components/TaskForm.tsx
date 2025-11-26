@@ -7,6 +7,7 @@ import { Save, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { FileUpload } from './FileUpload';
 import { AuditTrail } from './AuditTrail';
+import { getCurrentUserId } from '../utils/jwt';
 
 export const TaskForm = () => {
   const { id } = useParams();
@@ -22,6 +23,9 @@ export const TaskForm = () => {
   });
   const [tagInput, setTagInput] = useState('');
   const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [taskOwnerId, setTaskOwnerId] = useState<string | null>(null);
+  const currentUserId = getCurrentUserId();
+  const isOwner = !id || !taskOwnerId || taskOwnerId === currentUserId;
 
   useEffect(() => {
     if (id) loadTask();
@@ -38,6 +42,7 @@ export const TaskForm = () => {
         Tags: task.tags,
         DueDate: task.dueDate ? task.dueDate.split('T')[0] : null,
       });
+      setTaskOwnerId(task.userId);
       
       // Load attachments
       const taskAttachments = await attachmentApi.getTaskAttachments(id!);
@@ -222,6 +227,7 @@ export const TaskForm = () => {
               taskId={id || null}
               attachments={attachments}
               onAttachmentsChange={setAttachments}
+              isOwner={isOwner}
             />
 
             <AuditTrail taskId={id || null} />
