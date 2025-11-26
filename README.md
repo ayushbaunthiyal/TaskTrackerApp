@@ -1,13 +1,17 @@
-# Task Tracker API
+# Task Tracker Application
 
-A modern full-stack Task Tracker application built with .NET 8 Web API, PostgreSQL, and Clean Architecture principles.
+A modern full-stack Task Tracker application built with .NET 9 Web API, React TypeScript, PostgreSQL, and Clean Architecture principles.
 
 ## Features
 
+### Backend (Phase 1 & 2)
 - ✅ Clean Architecture (Domain, Application, Infrastructure, API layers)
 - ✅ RESTful API with CRUD operations for tasks
+- ✅ JWT Authentication & Authorization
+- ✅ User Registration & Login
+- ✅ Token Refresh & Revocation
 - ✅ PostgreSQL database with Entity Framework Core
-- ✅ Search, filtering, sorting, and pagination
+- ✅ Advanced Search, filtering, sorting, and pagination
 - ✅ Soft delete pattern
 - ✅ Audit logging with automatic interceptors
 - ✅ Structured logging with Serilog and correlation IDs
@@ -17,13 +21,29 @@ A modern full-stack Task Tracker application built with .NET 8 Web API, PostgreS
 - ✅ FluentValidation for input validation
 - ✅ Docker support for PostgreSQL
 
+### Frontend (Phase 3)
+- ✅ Modern React 18 with TypeScript
+- ✅ JWT Authentication UI (Login/Register)
+- ✅ Task Management (Create, Edit, Delete, View)
+- ✅ Advanced Search & Filtering
+- ✅ Real-time Toast Notifications
+- ✅ Responsive Design (Mobile, Tablet, Desktop)
+- ✅ Due Date Alerts (24-hour highlighting)
+- ✅ Status & Priority Color Coding
+- ✅ Tag Management
+- ✅ Protected Routes
+- ✅ Automatic Token Refresh
+- ✅ Tailwind CSS Styling
+- ✅ Docker Ready
+
 ## Prerequisites
 
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
+- [Node.js 18+](https://nodejs.org/)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop)
 - IDE (Visual Studio 2022, VS Code, or Rider)
 
-## Getting Started
+## Quick Start
 
 ### 1. Clone the Repository
 
@@ -33,6 +53,46 @@ cd TaskTrackerApp
 ```
 
 ### 2. Start PostgreSQL with Docker
+
+```bash
+docker-compose up -d
+```
+
+This will start a PostgreSQL 16 container with:
+- **Host**: localhost
+- **Port**: 5433
+- **Database**: TaskTrackerDB
+- **Username**: tasktracker_user
+- **Password**: TaskTracker123!
+
+### 3. Start the Backend API
+
+```bash
+cd TaskTracker.API
+dotnet run
+```
+
+The API will be available at:
+- **API**: http://localhost:5128
+- **Swagger UI**: http://localhost:5128/swagger
+
+### 4. Start the React UI
+
+```bash
+cd task-tracker-ui
+npm install
+npm run dev
+```
+
+The UI will be available at:
+- **UI**: http://localhost:3000
+
+### 5. Test the Application
+
+1. Open http://localhost:3000
+2. Click "Sign up" to create a new account
+3. Login with your credentials
+4. Create and manage tasks!
 
 ```bash
 docker-compose up -d
