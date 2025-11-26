@@ -29,10 +29,14 @@ export const TaskList = () => {
     try {
       setLoading(true);
       const response = await taskApi.getTasks(filters);
-      setTasks(response.data || []);
+      console.log('Tasks API Response:', response);
+      console.log('Tasks items:', response.items);
+      console.log('Total pages:', response.totalPages);
+      setTasks(response.items || []);
       setTotalPages(response.totalPages || 1);
     } catch (error: any) {
       console.error('Error loading tasks:', error);
+      console.error('Error response:', error.response);
       toast.error('Failed to load tasks');
       setTasks([]);
     } finally {
@@ -69,8 +73,8 @@ export const TaskList = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">My Tasks</h1>
-            <p className="text-gray-600 mt-1">Manage and track your tasks</p>
+            <h1 className="text-3xl font-bold text-gray-900">Active Tasks</h1>
+            <p className="text-gray-600 mt-1">Manage and track Tasks</p>
           </div>
           <div className="flex gap-3">
             <Link

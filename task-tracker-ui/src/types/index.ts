@@ -60,7 +60,7 @@ export interface TaskFormData {
 }
 
 export interface PaginatedResponse<T> {
-  data: T[];
+  items: T[];
   pageNumber: number;
   pageSize: number;
   totalCount: number;
