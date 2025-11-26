@@ -73,7 +73,8 @@ try
         {
             policy.AllowAnyOrigin()
                   .AllowAnyMethod()
-                  .AllowAnyHeader();
+                  .AllowAnyHeader()
+                  .WithExposedHeaders("content-disposition"); // Expose Content-Disposition header for file downloads
         });
     });
 

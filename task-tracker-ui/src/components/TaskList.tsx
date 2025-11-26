@@ -17,7 +17,7 @@ export const TaskList = () => {
     sortBy: 'DueDate',
     sortDescending: false,
     pageNumber: 1,
-    pageSize: 25,
+    pageSize: 8,
   });
   const [totalPages, setTotalPages] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
@@ -94,7 +94,7 @@ export const TaskList = () => {
       sortBy: 'DueDate',
       sortDescending: false,
       pageNumber: 1,
-      pageSize: 25,
+      pageSize: 8,
     });
     toast.success('Filters reset');
   };
@@ -148,7 +148,7 @@ export const TaskList = () => {
         onCancel={cancelDelete}
       />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Active Tasks</h1>
@@ -318,7 +318,7 @@ export const TaskList = () => {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {tasks.map((task) => {
                 const isActive = task.status !== TaskStatus.Completed && task.status !== TaskStatus.Cancelled;
                 return (
