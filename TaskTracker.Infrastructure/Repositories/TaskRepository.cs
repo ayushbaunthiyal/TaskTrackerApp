@@ -58,12 +58,14 @@ public class TaskRepository : Repository<TaskItem>, ITaskRepository
 
         if (dueDateFrom.HasValue)
         {
-            query = query.Where(t => t.DueDate >= dueDateFrom.Value);
+            var dueDateFromUtc = DateTime.SpecifyKind(dueDateFrom.Value, DateTimeKind.Utc);
+            query = query.Where(t => t.DueDate >= dueDateFromUtc);
         }
 
         if (dueDateTo.HasValue)
         {
-            query = query.Where(t => t.DueDate <= dueDateTo.Value);
+            var dueDateToUtc = DateTime.SpecifyKind(dueDateTo.Value, DateTimeKind.Utc);
+            query = query.Where(t => t.DueDate <= dueDateToUtc);
         }
 
         // Get total count before pagination
