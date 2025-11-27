@@ -1,0 +1,17 @@
+# Worker logs
+logs/
+*.log
+
+# Build results
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+
+# User-specific files
+*.user
+*.userosscache
+*.suo
+
+# Visual Studio cache
+.vs/

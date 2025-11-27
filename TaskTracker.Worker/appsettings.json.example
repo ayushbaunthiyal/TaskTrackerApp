@@ -1,0 +1,47 @@
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Host=localhost;Port=5433;Database=TaskTrackerDB;Username=tasktracker_user;Password=YOUR_PASSWORD"
+  },
+  "WorkerSettings": {
+    "CheckIntervalMinutes": 1,
+    "DueDateLookaheadHours": 24,
+    "DailyEmailQuota": 90
+  },
+  "MailgunSettings": {
+    "ApiKey": "YOUR_MAILGUN_API_KEY",
+    "Domain": "YOUR_MAILGUN_DOMAIN",
+    "BaseUrl": "https://api.mailgun.net/v3",
+    "FromAddress": "noreply@YOUR_MAILGUN_DOMAIN",
+    "FromName": "Task Tracker Reminders"
+  },
+  "ApplicationSettings": {
+    "BaseUrl": "http://localhost:3000"
+  },
+  "Serilog": {
+    "MinimumLevel": {
+      "Default": "Information",
+      "Override": {
+        "Microsoft": "Warning",
+        "System": "Warning",
+        "Microsoft.EntityFrameworkCore": "Warning"
+      }
+    },
+    "WriteTo": [
+      {
+        "Name": "Console",
+        "Args": {
+          "outputTemplate": "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}"
+        }
+      },
+      {
+        "Name": "File",
+        "Args": {
+          "path": "logs/worker-.log",
+          "rollingInterval": "Day",
+          "outputTemplate": "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {Level:u3}] {Message:lj}{NewLine}{Exception}",
+          "retainedFileCountLimit": 7
+        }
+      }
+    ]
+  }
+}
