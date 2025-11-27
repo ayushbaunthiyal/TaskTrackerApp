@@ -144,11 +144,6 @@ export const FileUpload = ({ taskId, attachments, onAttachmentsChange, isOwner =
         onDrop={isOwner ? handleDrop : undefined}
         onClick={() => taskId && isOwner && fileInputRef.current?.click()}
         title={!isOwner ? 'You can only upload/delete attachments to your own tasks' : ''}
-        onDragEnter={handleDrag}
-        onDragLeave={handleDrag}
-        onDragOver={handleDrag}
-        onDrop={handleDrop}
-        onClick={() => taskId && fileInputRef.current?.click()}
       >
         <input
           ref={fileInputRef}
