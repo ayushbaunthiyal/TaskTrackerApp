@@ -376,7 +376,6 @@ $RECYCLE.BIN/
 # Configuration files with API keys and secrets
 TaskTracker.Worker/appsettings.json
 docker-compose.yml
-Phases/Phase4_Worker_Implementation.md
 
 # Database files
 *.db
