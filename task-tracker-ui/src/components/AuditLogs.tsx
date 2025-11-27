@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auditLogApi } from '../api/auditLogApi';
 import { AuditLogListDto, AuditLogFilters } from '../types';
-import { ArrowLeft, Search, Filter, ChevronLeft, ChevronRight, Calendar, User, FileText } from 'lucide-react';
+import { ArrowLeft, Search, Filter, ChevronLeft, ChevronRight, Calendar, User, FileText, RotateCcw } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export const AuditLogs = () => {
@@ -13,7 +13,7 @@ export const AuditLogs = () => {
     sortBy: 'Timestamp',
     sortDescending: true,
     pageNumber: 1,
-    pageSize: 20,
+    pageSize: 7,
   });
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
@@ -54,6 +54,10 @@ export const AuditLogs = () => {
     setFilters({ ...filters, searchTerm: value, pageNumber: 1 });
   };
 
+  const handleRefresh = () => {
+    setFilters({ ...filters, pageNumber: 1 });
+  };
+
   const handleFilterChange = (field: keyof AuditLogFilters, value: any) => {
     setFilters({ ...filters, [field]: value, pageNumber: 1 });
   };
@@ -64,7 +68,7 @@ export const AuditLogs = () => {
       sortBy: 'Timestamp',
       sortDescending: true,
       pageNumber: 1,
-      pageSize: 20,
+      pageSize: 7,
     });
   };
 
@@ -96,22 +100,34 @@ export const AuditLogs = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-[2000px] mx-auto px-3 sm:px-4 lg:px-6 py-4">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-4">
           <button
             onClick={() => navigate('/tasks')}
-            className="flex items-center text-gray-600 hover:text-gray-900 mb-4 transition-colors"
+            className="flex items-center text-gray-600 hover:text-gray-900 mb-3 transition-colors text-sm"
           >
-            <ArrowLeft className="w-5 h-5 mr-2" />
+            <ArrowLeft className="w-4 h-4 mr-1" />
             Back to Tasks
           </button>
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Audit Logs</h1>
-          <p className="text-gray-600">View all system activity and changes</p>
+          <div className="flex items-center gap-4">
+            <div className="bg-gradient-to-br from-purple-500 to-pink-600 p-3 rounded-xl shadow-lg">
+              <FileText className="w-8 h-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-1">
+                Audit Logs
+              </h1>
+              <p className="text-sm text-gray-600 flex items-center gap-1.5">
+                <span className="inline-block w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
+                View all system activity and changes
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Search and Filter Bar */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div className="bg-white rounded-lg shadow-md p-3 mb-3">
           <div className="flex flex-col md:flex-row gap-4">
             {/* Search */}
             <div className="flex-1 relative">
@@ -125,18 +141,30 @@ export const AuditLogs = () => {
               />
             </div>
 
-            {/* Filter Toggle */}
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                showFilters
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              <Filter className="w-5 h-5" />
-              Filters
-            </button>
+            <div className="flex gap-2">
+              {/* Refresh Button */}
+              <button
+                onClick={handleRefresh}
+                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                title="Refresh audit logs"
+              >
+                <RotateCcw className="w-5 h-5" />
+                <span className="hidden sm:inline">Refresh</span>
+              </button>
+
+              {/* Filter Toggle */}
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                  showFilters
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                <Filter className="w-5 h-5" />
+                Filters
+              </button>
+            </div>
           </div>
 
           {/* Advanced Filters */}
@@ -236,7 +264,7 @@ export const AuditLogs = () => {
         </div>
 
         {/* Results Count */}
-        <div className="mb-4 text-sm text-gray-600">
+        <div className="mb-2 text-sm text-gray-600">
           Showing {logs.length > 0 ? ((filters.pageNumber - 1) * filters.pageSize) + 1 : 0} - {Math.min(filters.pageNumber * filters.pageSize, totalCount)} of {totalCount} audit logs
         </div>
 
@@ -255,36 +283,36 @@ export const AuditLogs = () => {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50 border-b">
+                <thead className="bg-gradient-to-r from-purple-50 to-pink-50 border-b-2 border-purple-200">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                       Timestamp
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                       User
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                       Action
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                       Entity Type
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                       Details
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {logs.map((log) => (
-                    <tr key={log.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <tr key={log.id} className="hover:bg-purple-50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-800">
                         {formatTimestamp(log.timestamp)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
+                        <div className="text-sm font-bold text-gray-900">
                           {log.userName || 'System'}
                         </div>
-                        <div className="text-sm text-gray-500">{log.userEmail}</div>
+                        <div className="text-sm font-medium text-gray-600">{log.userEmail}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
@@ -295,10 +323,10 @@ export const AuditLogs = () => {
                           {log.action}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-800">
                         {log.entityType}
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-600 max-w-md truncate">
+                      <td className="px-6 py-4 text-sm font-medium text-gray-700 max-w-md truncate">
                         {log.details}
                       </td>
                     </tr>
@@ -311,28 +339,104 @@ export const AuditLogs = () => {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="mt-6 flex items-center justify-between">
-            <div className="text-sm text-gray-700">
-              Page {filters.pageNumber} of {totalPages}
+          <div className="sticky bottom-0 bg-white border-t border-gray-200 py-3 mt-3 flex items-center justify-center gap-2 shadow-lg rounded-t-lg flex-wrap">
+            <button
+              onClick={() => handlePageChange(1)}
+              disabled={filters.pageNumber === 1}
+              className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              First
+            </button>
+            <button
+              onClick={() => handlePageChange(filters.pageNumber - 1)}
+              disabled={filters.pageNumber === 1}
+              className="flex items-center px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronLeft className="w-5 h-5" />
+              Previous
+            </button>
+            
+            {/* Page numbers */}
+            <div className="flex gap-1">
+              {(() => {
+                const pages = [];
+                const showPages = 5; // Number of page buttons to show
+                let startPage = Math.max(1, filters.pageNumber - Math.floor(showPages / 2));
+                let endPage = Math.min(totalPages, startPage + showPages - 1);
+                
+                // Adjust start if we're near the end
+                if (endPage - startPage < showPages - 1) {
+                  startPage = Math.max(1, endPage - showPages + 1);
+                }
+                
+                // Show first page if not in range
+                if (startPage > 1) {
+                  pages.push(
+                    <button
+                      key={1}
+                      onClick={() => handlePageChange(1)}
+                      className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-purple-50 hover:border-purple-300 transition"
+                    >
+                      1
+                    </button>
+                  );
+                  if (startPage > 2) {
+                    pages.push(<span key="ellipsis1" className="px-2 py-2">...</span>);
+                  }
+                }
+                
+                // Show page numbers in range
+                for (let i = startPage; i <= endPage; i++) {
+                  pages.push(
+                    <button
+                      key={i}
+                      onClick={() => handlePageChange(i)}
+                      className={`px-3 py-2 border rounded-lg transition ${
+                        filters.pageNumber === i
+                          ? 'bg-purple-600 text-white border-purple-600'
+                          : 'border-gray-300 hover:bg-purple-50 hover:border-purple-300'
+                      }`}
+                    >
+                      {i}
+                    </button>
+                  );
+                }
+                
+                // Show last page if not in range
+                if (endPage < totalPages) {
+                  if (endPage < totalPages - 1) {
+                    pages.push(<span key="ellipsis2" className="px-2 py-2">...</span>);
+                  }
+                  pages.push(
+                    <button
+                      key={totalPages}
+                      onClick={() => handlePageChange(totalPages)}
+                      className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-purple-50 hover:border-purple-300 transition"
+                    >
+                      {totalPages}
+                    </button>
+                  );
+                }
+                
+                return pages;
+              })()}
             </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => handlePageChange(filters.pageNumber - 1)}
-                disabled={filters.pageNumber === 1}
-                className="flex items-center px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                <ChevronLeft className="w-5 h-5" />
-                Previous
-              </button>
-              <button
-                onClick={() => handlePageChange(filters.pageNumber + 1)}
-                disabled={filters.pageNumber === totalPages}
-                className="flex items-center px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                Next
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            </div>
+
+            <button
+              onClick={() => handlePageChange(filters.pageNumber + 1)}
+              disabled={filters.pageNumber === totalPages}
+              className="flex items-center px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              Next
+              <ChevronRight className="w-5 h-5" />
+            </button>
+            <button
+              onClick={() => handlePageChange(totalPages)}
+              disabled={filters.pageNumber === totalPages}
+              className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              Last
+            </button>
           </div>
         )}
       </div>

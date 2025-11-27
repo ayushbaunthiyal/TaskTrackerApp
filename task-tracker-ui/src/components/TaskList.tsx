@@ -94,7 +94,7 @@ export const TaskList = () => {
       sortBy: 'DueDate',
       sortDescending: false,
       pageNumber: 1,
-      pageSize: 8,
+      pageSize: 10,
     });
     toast.success('Filters reset');
   };
@@ -150,9 +150,19 @@ export const TaskList = () => {
       
       <div className="max-w-[2000px] mx-auto px-3 sm:px-4 lg:px-6 py-4">
         <div className="flex justify-between items-center mb-4">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Active Tasks</h1>
-            <p className="text-sm text-gray-600">Manage and track Tasks</p>
+          <div className="flex items-center gap-4">
+            <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-3 rounded-xl shadow-lg">
+              <ClipboardList className="w-8 h-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                Active Tasks
+              </h1>
+              <p className="text-sm text-gray-600 flex items-center gap-1.5">
+                <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                Manage and track your tasks efficiently
+              </p>
+            </div>
           </div>
           <div className="flex gap-2 items-center">
             <Link

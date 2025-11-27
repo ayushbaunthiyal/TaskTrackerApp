@@ -80,8 +80,8 @@ export const TaskCard = ({ task, onDelete, isOverdue, isDueToday, isDueSoon }: T
       
       <div className="flex justify-between items-start mb-3">
         <div className="flex-1 pr-2">
-          <h3 className="text-base font-semibold text-gray-900 line-clamp-2">{task.title}</h3>
-          <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
+          <h3 className="text-base font-bold text-gray-800 line-clamp-2">{task.title}</h3>
+          <div className="flex items-center gap-1 text-xs font-medium text-gray-600 mt-1">
             <User className="w-3 h-3" />
             <span>{task.userName}</span>
           </div>
@@ -105,22 +105,22 @@ export const TaskCard = ({ task, onDelete, isOverdue, isDueToday, isDueSoon }: T
         </div>
       </div>
 
-      <p className="text-gray-600 text-sm mb-3 line-clamp-3">{task.description}</p>
+      <p className="text-gray-700 text-sm font-medium mb-3 line-clamp-3">{task.description}</p>
 
       <div className="flex flex-wrap gap-2 mb-3">
-        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusColors[task.status]}`}>
+        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${statusColors[task.status]}`}>
           {statusLabels[task.status]}
         </span>
-        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${priorityColors[task.priority]}`}>
+        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${priorityColors[task.priority]}`}>
           {priorityLabels[task.priority]}
         </span>
       </div>
 
       {task.tags.length > 0 && (
         <div className="flex items-center gap-2 mb-2 flex-wrap">
-          <Tag className="w-4 h-4 text-gray-400" />
+          <Tag className="w-4 h-4 text-gray-500" />
           {task.tags.map((tag, index) => (
-            <span key={index} className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded">
+            <span key={index} className="text-xs font-medium text-gray-700 bg-gray-100 px-2 py-1 rounded">
               {tag}
             </span>
           ))}
@@ -128,14 +128,14 @@ export const TaskCard = ({ task, onDelete, isOverdue, isDueToday, isDueSoon }: T
       )}
 
       {task.dueDate && (
-        <div className="flex items-center gap-2 text-sm text-gray-500">
+        <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
           <Calendar className="w-4 h-4" />
           Due: {format(parseISO(task.dueDate), 'MMM dd, yyyy')}
         </div>
       )}
 
       {task.attachmentCount !== undefined && task.attachmentCount > 0 && (
-        <div className="flex items-center gap-2 text-sm text-gray-500 mt-2">
+        <div className="flex items-center gap-2 text-sm font-medium text-gray-700 mt-2">
           <Paperclip className="w-4 h-4" />
           {task.attachmentCount} attachment{task.attachmentCount > 1 ? 's' : ''}
         </div>
