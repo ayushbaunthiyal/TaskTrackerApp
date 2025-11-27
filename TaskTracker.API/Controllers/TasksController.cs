@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using TaskTracker.Application.DTOs;
 using TaskTracker.Application.Interfaces.Services;
+using TaskTracker.Application.Services;
 
 namespace TaskTracker.API.Controllers;
 
@@ -92,6 +93,7 @@ public class TasksController : ControllerBase
         try
         {
             var createdTask = await _taskService.CreateTaskAsync(createTaskDto);
+            MetricsService.RecordTaskCreated();
             return CreatedAtAction(nameof(GetTaskById), new { id = createdTask.Id }, createdTask);
         }
         catch (KeyNotFoundException ex)
@@ -119,6 +121,14 @@ public class TasksController : ControllerBase
         try
         {
             var updatedTask = await _taskService.UpdateTaskAsync(id, updateTaskDto);
+            MetricsService.RecordTaskUpdated();
+            
+            // Track if task was marked as completed
+            if (updatedTask.Status == Domain.Enums.TaskStatus.Completed)
+            {
+                MetricsService.RecordTaskCompleted();
+            }
+            
             return Ok(updatedTask);
         }
         catch (UnauthorizedAccessException ex)
@@ -149,6 +159,7 @@ public class TasksController : ControllerBase
                 return NotFound(new { error = $"Task with ID {id} not found" });
             }
 
+            MetricsService.RecordTaskDeleted();
             return NoContent();
         }
         catch (UnauthorizedAccessException ex)

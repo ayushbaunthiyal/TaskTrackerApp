@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Prometheus;
 using Serilog;
 using Serilog.Enrichers.CorrelationId;
 using TaskTracker.Application;
@@ -39,8 +40,16 @@ try
         {
             Title = "TaskTracker API",
             Version = "v1",
-            Description = "Task management API with JWT authentication"
+            Description = "Task management API with JWT authentication, rate limiting, and comprehensive audit logging"
         });
+
+        // Include XML comments for better API documentation
+        var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+        var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+        if (File.Exists(xmlPath))
+        {
+            options.IncludeXmlComments(xmlPath);
+        }
 
         options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
         {
@@ -108,7 +117,15 @@ try
 
     // Add Health Checks
     builder.Services.AddHealthChecks()
-        .AddNpgSql(builder.Configuration.GetConnectionString("DefaultConnection")!, name: "database");
+        .AddNpgSql(builder.Configuration.GetConnectionString("DefaultConnection")!, name: "database")
+        .AddCheck("memory", () =>
+        {
+            var allocated = GC.GetTotalMemory(forceFullCollection: false);
+            var threshold = 1024L * 1024L * 1024L; // 1 GB threshold
+            return allocated < threshold
+                ? Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy($"Memory usage: {allocated / (1024 * 1024)} MB")
+                : Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Degraded($"Memory usage: {allocated / (1024 * 1024)} MB");
+        });
 
     // Add Rate Limiting
     var rateLimitConfig = builder.Configuration.GetSection("RateLimiting");
@@ -203,10 +220,12 @@ try
     var app = builder.Build();
 
     // Configure the HTTP request pipeline
+    // Enable Swagger for all environments (useful for demos and testing)
+    app.UseSwagger();
+    app.UseSwaggerUI();
+    
     if (app.Environment.IsDevelopment())
     {
-        app.UseSwagger();
-        app.UseSwaggerUI();
 
         // Auto-apply migrations and seed data in development
         using (var scope = app.Services.CreateScope())
@@ -233,6 +252,10 @@ try
     // Middleware
     app.UseExceptionHandler();
     app.UseSerilogRequestLogging();
+    
+    // Prometheus metrics endpoint (must be before HTTPS redirection)
+    app.UseHttpMetrics();
+    
     app.UseHttpsRedirection();
     app.UseCors();
     
@@ -247,9 +270,31 @@ try
 
     // Map controllers
     app.MapControllers();
+    
+    // Map Prometheus metrics endpoint
+    app.MapMetrics();
 
-    // Map health check endpoints
-    app.MapHealthChecks("/health");
+    // Map health check endpoints with detailed responses
+    app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+    {
+        ResponseWriter = async (context, report) =>
+        {
+            context.Response.ContentType = "application/json";
+            var result = System.Text.Json.JsonSerializer.Serialize(new
+            {
+                status = report.Status.ToString(),
+                checks = report.Entries.Select(e => new
+                {
+                    name = e.Key,
+                    status = e.Value.Status.ToString(),
+                    description = e.Value.Description,
+                    duration = e.Value.Duration.TotalMilliseconds
+                }),
+                totalDuration = report.TotalDuration.TotalMilliseconds
+            });
+            await context.Response.WriteAsync(result);
+        }
+    });
     app.MapHealthChecks("/health/db", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
     {
         Predicate = check => check.Name == "database"
@@ -266,3 +311,6 @@ finally
 {
     Log.CloseAndFlush();
 }
+
+// Make the implicit Program class accessible to the test project
+public partial class Program { }

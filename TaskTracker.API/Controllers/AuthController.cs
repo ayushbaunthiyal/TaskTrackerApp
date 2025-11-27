@@ -5,6 +5,7 @@ using System.Security.Claims;
 using TaskTracker.Application.DTOs;
 using TaskTracker.Application.DTOs.Auth;
 using TaskTracker.Application.Interfaces;
+using TaskTracker.Application.Services;
 
 namespace TaskTracker.API.Controllers;
 
@@ -31,6 +32,7 @@ public class AuthController : ControllerBase
         try
         {
             var response = await _authService.RegisterAsync(registerDto);
+            MetricsService.RecordUserRegistered();
             return StatusCode(201, response);
         }
         catch (InvalidOperationException ex)
@@ -51,14 +53,17 @@ public class AuthController : ControllerBase
         try
         {
             var response = await _authService.LoginAsync(loginDto);
+            MetricsService.RecordAuthenticationSuccess();
             return Ok(response);
         }
         catch (UnauthorizedAccessException ex)
         {
+            MetricsService.RecordAuthenticationFailure();
             return Unauthorized(new { error = ex.Message });
         }
         catch (InvalidOperationException ex)
         {
+            MetricsService.RecordAuthenticationFailure();
             return Unauthorized(new { error = ex.Message });
         }
     }

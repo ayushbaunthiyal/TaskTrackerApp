@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using TaskTracker.Application.DTOs;
 using TaskTracker.Application.Interfaces;
+using TaskTracker.Application.Services;
 
 namespace TaskTracker.API.Controllers;
 
@@ -64,6 +65,7 @@ public class AttachmentsController : ControllerBase
                 file.FileName,
                 file.Length);
 
+            MetricsService.RecordAttachmentUploaded();
             return CreatedAtAction(nameof(DownloadAttachment), new { id = attachment.Id }, attachment);
         }
         catch (KeyNotFoundException ex)
@@ -106,6 +108,7 @@ public class AttachmentsController : ControllerBase
         try
         {
             await _attachmentService.DeleteAttachmentAsync(id);
+            MetricsService.RecordAttachmentDeleted();
             return NoContent();
         }
         catch (KeyNotFoundException ex)

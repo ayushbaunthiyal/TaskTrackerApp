@@ -32,6 +32,8 @@ public class ReminderService : IReminderService
 
     public async Task ProcessRemindersAsync(CancellationToken cancellationToken)
     {
+        using var _ = WorkerMetricsService.MeasureWorkerCycle();
+        
         try
         {
             _logger.LogInformation("Starting reminder processing at {Time}", DateTime.UtcNow);
@@ -42,11 +44,14 @@ public class ReminderService : IReminderService
             {
                 _logger.LogWarning("Daily email quota reached ({Count}/{Quota}). Skipping reminder processing.",
                     emailsSentToday, _settings.DailyEmailQuota);
+                WorkerMetricsService.SetEmailsRemainingToday(0);
                 return;
             }
 
             var remainingQuota = _settings.DailyEmailQuota - emailsSentToday;
             var maxEmailsThisRun = Math.Min(_settings.MaxEmailsPerRun, remainingQuota);
+
+            WorkerMetricsService.SetEmailsRemainingToday(remainingQuota);
 
             _logger.LogInformation("Email quota status: {Sent}/{Quota} sent today, max {Max} this run",
                 emailsSentToday, _settings.DailyEmailQuota, maxEmailsThisRun);
@@ -54,6 +59,8 @@ public class ReminderService : IReminderService
             // Find tasks that need reminders
             var cutoffDate = DateTime.UtcNow.AddHours(_settings.DueDateLookaheadHours);
             var tasksNeedingReminders = await GetTasksNeedingRemindersAsync(cutoffDate, maxEmailsThisRun, cancellationToken);
+
+            WorkerMetricsService.SetTasksDueWithin24Hours(tasksNeedingReminders.Count);
 
             _logger.LogInformation("Found {Count} tasks needing reminders", tasksNeedingReminders.Count);
 
@@ -76,6 +83,7 @@ public class ReminderService : IReminderService
                         _logger.LogInformation("Email sending disabled. Would send reminder for task {TaskId}: {Title}",
                             task.Id, task.Title);
                         await LogReminderSentAsync(task, "Email sending disabled (dry run)", cancellationToken);
+                        WorkerMetricsService.RecordReminderProcessed();
                         continue;
                     }
 
@@ -88,16 +96,20 @@ public class ReminderService : IReminderService
                         task.Priority.ToString()
                     );
 
+                    WorkerMetricsService.RecordReminderProcessed();
+
                     if (success)
                     {
                         await LogReminderSentAsync(task, "Reminder email sent successfully", cancellationToken);
                         emailsSent++;
+                        WorkerMetricsService.RecordReminderSent();
                         _logger.LogInformation("Reminder sent for task {TaskId}: {Title} to {Email}",
                             task.Id, task.Title, task.User.Email);
                     }
                     else
                     {
                         emailsFailed++;
+                        WorkerMetricsService.RecordReminderFailed();
                         _logger.LogWarning("Failed to send reminder for task {TaskId}: {Title}",
                             task.Id, task.Title);
                     }
@@ -108,15 +120,21 @@ public class ReminderService : IReminderService
                 catch (Exception ex)
                 {
                     emailsFailed++;
+                    WorkerMetricsService.RecordReminderFailed();
+                    WorkerMetricsService.RecordWorkerError();
                     _logger.LogError(ex, "Error processing reminder for task {TaskId}", task.Id);
                 }
             }
+
+            WorkerMetricsService.RecordWorkerCycle();
+            WorkerMetricsService.SetLastRunTimestamp();
 
             _logger.LogInformation("Reminder processing completed. Sent: {Sent}, Failed: {Failed}, Total today: {Total}",
                 emailsSent, emailsFailed, emailsSentToday + emailsSent);
         }
         catch (Exception ex)
         {
+            WorkerMetricsService.RecordWorkerError();
             _logger.LogError(ex, "Error in reminder processing");
             throw;
         }

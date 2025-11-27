@@ -303,11 +303,10 @@ public class AuthServiceTests
         _refreshTokenRepositoryMock.Setup(x => x.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<RefreshToken, bool>>>()))
             .ReturnsAsync(new List<RefreshToken>());
 
-        // Act - should not throw, just silently ignore invalid tokens
-        await _authService.RevokeRefreshTokenAsync(revokeDto.RefreshToken);
-
-        // Assert - verify no update was called
-        _refreshTokenRepositoryMock.Verify(x => x.UpdateAsync(It.IsAny<RefreshToken>()), Times.Never);
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            async () => await _authService.RevokeRefreshTokenAsync(revokeDto.RefreshToken)
+        );
     }
 }
 

@@ -7,15 +7,18 @@ public class ReminderHostedService : BackgroundService
     private readonly IServiceProvider _serviceProvider;
     private readonly WorkerSettings _settings;
     private readonly ILogger<ReminderHostedService> _logger;
+    private readonly WorkerHealthService _healthService;
 
     public ReminderHostedService(
         IServiceProvider serviceProvider,
         WorkerSettings settings,
-        ILogger<ReminderHostedService> logger)
+        ILogger<ReminderHostedService> logger,
+        WorkerHealthService healthService)
     {
         _serviceProvider = serviceProvider;
         _settings = settings;
         _logger = logger;
+        _healthService = healthService;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -40,11 +43,14 @@ public class ReminderHostedService : BackgroundService
                     await reminderService.ProcessRemindersAsync(stoppingToken);
                 }
 
+                _healthService.RecordSuccessfulRun();
+                
                 _logger.LogInformation("Reminder check cycle completed. Next check in {Minutes} minutes.",
                     _settings.CheckIntervalMinutes);
             }
             catch (Exception ex)
             {
+                _healthService.RecordFailedRun();
                 _logger.LogError(ex, "Error occurred during reminder processing cycle");
             }
 
