@@ -327,32 +327,9 @@ task-tracker-ui/
 - Responsive padding
 - Mobile navigation
 
-## Error Handling
-
-### API Errors
-- Network errors: Toast notification
-- 401 Unauthorized: Auto token refresh
-- 403 Forbidden: Permission error message
-- 404 Not Found: User-friendly message
-- 500 Server Error: Generic error message
-
-### Form Validation
-- Required field validation
-- Email format validation
-- Password minimum length
-- Max length enforcement
-- Duplicate tag prevention
-
-### User Feedback
-- Success toasts (green)
-- Error toasts (red)
-- Loading spinners
-- Disabled buttons during operations
-- Confirmation dialogs for destructive actions
-
 ## Environment Configuration
 
-### Development
+### Development (.env.development)
 ```env
 VITE_API_BASE_URL=http://localhost:5128/api
 ```
@@ -361,7 +338,7 @@ VITE_API_BASE_URL=http://localhost:5128/api
 - Source maps enabled
 - Development tools active
 
-### Production
+### Production (.env.production)
 ```env
 VITE_API_BASE_URL=http://tasktracker-api:5128/api
 ```
@@ -369,6 +346,105 @@ VITE_API_BASE_URL=http://tasktracker-api:5128/api
 - Optimized build
 - Minified assets
 - No source maps
+
+## Prerequisites
+
+- Node.js 18+ and npm
+- .NET 9.0 SDK
+- PostgreSQL (via Docker)
+- Git
+
+## Quick Start Guide
+
+### 1. Start PostgreSQL Database
+
+```powershell
+cd d:\repos\mygit\TaskTrackerApp
+docker-compose up -d
+```
+
+This will start PostgreSQL on port 5433.
+
+### 2. Start Backend API
+
+```powershell
+cd d:\repos\mygit\TaskTrackerApp\TaskTracker.API
+dotnet run
+```
+
+The API will be available at:
+- http://localhost:5128
+- Swagger UI: http://localhost:5128/swagger
+
+### 3. Install and Start React UI
+
+```powershell
+cd d:\repos\mygit\TaskTrackerApp\task-tracker-ui
+npm install
+npm run dev
+```
+
+The UI will be available at http://localhost:3000
+
+## Testing the Application
+
+### 1. Register a New User
+
+1. Open http://localhost:3000
+2. Click "Sign up" link
+3. Fill in the registration form:
+   - First Name: John
+   - Last Name: Doe
+   - Email: john@example.com
+   - Password: Password123!
+4. Click "Sign Up"
+
+### 2. Create Tasks
+
+1. After login, you'll be on the Tasks page
+2. Click "New Task" button
+3. Fill in task details:
+   - Title: "Complete Phase 3"
+   - Description: "Finish React UI implementation"
+   - Status: In Progress
+   - Priority: High
+   - Due Date: (tomorrow's date)
+   - Tags: "development", "urgent"
+4. Click "Create Task"
+
+### 3. Test Search and Filters
+
+1. Use the search box to find tasks
+2. Click "Filters" to show filter options
+3. Filter by Status, Priority
+4. Sort by different fields
+
+### 4. Test Due Date Alerts
+
+1. Create a task with due date within 24 hours
+2. The task card will have a yellow border
+3. An alert icon will show "Due within 24 hours"
+
+### 5. Test File Attachments ⭐ NEW
+
+1. Open a task you own
+2. Drag & drop a file or click to browse
+3. Verify file appears in attachment list
+4. Download the file to verify content
+5. Delete the attachment
+
+### 6. Test Audit Trail ⭐ NEW
+
+1. Open a task with some history
+2. Click to expand the audit log
+3. Verify all actions are logged with timestamps
+4. Check that user information is displayed
+
+### 7. Test Authorization
+
+1. Tasks created by you can be edited/deleted
+2. You can view all tasks (public read)
+3. Trying to delete another user's task will show error message
 
 ## Docker Configuration
 
@@ -391,123 +467,6 @@ VITE_API_BASE_URL=http://tasktracker-api:5128/api
 - CORS headers
 - Gzip compression
 - Cache control
-
-## Performance Optimizations
-
-### Build Optimizations
-- Code splitting
-- Tree shaking
-- Minification
-- Compression
-
-### Runtime Optimizations
-- Lazy loading routes
-- Debounced search
-- Pagination to limit data
-- Efficient re-renders with React hooks
-- Memoization where needed
-
-### Network Optimizations
-- Token stored locally (no repeated auth)
-- Automatic token refresh
-- Axios request/response interceptors
-- Efficient API queries with filters
-
-## Testing Strategy
-
-### Manual Testing Checklist
-✅ User registration with validation
-✅ User login with error handling
-✅ Change password functionality ⭐ NEW
-✅ Token persistence across page reloads
-✅ Automatic token refresh on expiry
-✅ Create task with all fields
-✅ Edit task (owner only)
-✅ Delete task (owner only)
-✅ View all tasks (public read)
-✅ Search functionality
-✅ Filter by status
-✅ Filter by priority
-✅ Sort by different fields
-✅ Pagination navigation
-✅ Due date highlighting (24 hours)
-✅ Tag management
-✅ File upload (drag & drop and click) ⭐ NEW
-✅ File download ⭐ NEW
-✅ File delete (owner only) ⭐ NEW
-✅ Audit log viewing ⭐ NEW
-✅ Audit log for attachments ⭐ NEW
-✅ Rate limiting enforcement ⭐ NEW
-✅ Rate limit error messages ⭐ NEW
-✅ Responsive design on mobile
-✅ Toast notifications
-✅ Loading states
-✅ Error handling
-✅ Logout functionality
-✅ Confirmation dialogs ⭐ NEW
-✅ Owner validation for attachments ⭐ NEW
-
-## Known Limitations
-
-1. ~~**No File Attachments**~~: ✅ **IMPLEMENTED** - Full file upload/download/delete functionality
-2. ~~**No Change Password**~~: ✅ **IMPLEMENTED** - Secure password change feature
-3. **No User Profile**: Basic auth only, profile management in future phases
-4. **No Real-time Updates**: WebSocket integration planned for future phases
-5. **Limited Unit Tests**: Focus was on implementation, testing suite in future phases
-6. **No Background Jobs**: Task reminder service planned for future phases
-
-## Browser Support
-
-- ✅ Chrome/Edge (latest)
-- ✅ Firefox (latest)
-- ✅ Safari (latest)
-- ✅ Mobile Safari
-- ✅ Chrome Mobile
-
-## Accessibility Features
-
-- Semantic HTML elements
-- ARIA labels where needed
-- Keyboard navigation support
-- Focus visible states
-- Color contrast compliance
-- Form labels properly associated
-
-## Security Considerations
-
-✅ JWT tokens in localStorage (appropriate for this use case)
-✅ Automatic token refresh
-✅ HTTPS recommended for production
-✅ Input validation on client and server
-✅ CORS properly configured
-✅ No sensitive data in localStorage except tokens
-✅ Logout clears all tokens
-✅ Protected routes prevent unauthorized access
-
-## Integration with Backend
-
-### Phase 1 & 2 APIs Used
-- ✅ POST /api/Auth/register
-- ✅ POST /api/Auth/login
-- ✅ POST /api/Auth/refresh
-- ✅ POST /api/Auth/revoke
-- ✅ POST /api/Auth/change-password ⭐ NEW
-- ✅ GET /api/Tasks (with filters)
-- ✅ GET /api/Tasks/{id}
-- ✅ POST /api/Tasks
-- ✅ PUT /api/Tasks/{id}
-- ✅ DELETE /api/Tasks/{id}
-- ✅ GET /api/Attachments/task/{taskId} ⭐ NEW
-- ✅ POST /api/Attachments/task/{taskId} ⭐ NEW
-- ✅ GET /api/Attachments/{id}/download ⭐ NEW
-- ✅ DELETE /api/Attachments/{id} ⭐ NEW
-- ✅ GET /api/AuditLogs/task/{taskId} ⭐ NEW
-
-### Authorization Model
-- Public read: ✅ All users can view all tasks
-- Private write: ✅ Only owners can modify their tasks
-- Error messages: ✅ Clear permission denied messages
-- Token validation: ✅ Automatic refresh on expiry
 
 ## Deployment Instructions
 
@@ -547,6 +506,251 @@ docker-compose up --build
 # Stop all services
 docker-compose down
 ```
+
+## Performance Optimizations
+
+### Build Optimizations
+- Code splitting
+- Tree shaking
+- Minification
+- Compression
+
+### Runtime Optimizations
+- Lazy loading routes
+- Debounced search
+- Pagination to limit data
+- Efficient re-renders with React hooks
+- Memoization where needed
+
+### Network Optimizations
+- Token stored locally (no repeated auth)
+- Automatic token refresh
+- Axios request/response interceptors
+- Efficient API queries with filters
+
+## Error Handling
+
+### API Errors
+- Network errors: Toast notification
+- 401 Unauthorized: Auto token refresh
+- 403 Forbidden: Permission error message
+- 404 Not Found: User-friendly message
+- 500 Server Error: Generic error message
+
+### Form Validation
+- Required field validation
+- Email format validation
+- Password minimum length
+- Max length enforcement
+- Duplicate tag prevention
+
+### User Feedback
+- Success toasts (green)
+- Error toasts (red)
+- Loading spinners
+- Disabled buttons during operations
+- Confirmation dialogs for destructive actions
+
+## Troubleshooting
+
+### API Connection Issues
+
+**Problem:** UI can't connect to API  
+**Solution:** 
+- Ensure API is running on port 5128
+- Check CORS settings in API Program.cs
+- Verify .env.development has correct API URL
+
+### Build Errors
+
+**Problem:** TypeScript errors  
+**Solution:**
+```powershell
+npm install
+npm run dev
+```
+
+**Problem:** Tailwind CSS not working  
+**Solution:**
+```powershell
+npm install -D tailwindcss postcss autoprefixer
+npx tailwindcss init -p
+```
+
+### Authentication Issues
+
+**Problem:** Token expired  
+**Solution:** The app automatically refreshes tokens. If persistent, clear localStorage and login again.
+
+**Problem:** Can't login/register  
+**Solution:** Check API is running and database is connected.
+
+### File Upload Issues
+
+**Problem:** File upload fails  
+**Solution:**
+- Check file size (max 10MB)
+- Ensure you own the task
+- Verify API is running and accessible
+
+### Rate Limiting Issues
+
+**Problem:** Getting 429 errors  
+**Solution:**
+- Wait for the retry-after period
+- Check rate limiting configuration in appsettings.json
+- Review Serilog logs for rate limit details
+
+## Development Workflow
+
+### Making Changes to UI
+
+1. Edit files in `task-tracker-ui/src/`
+2. Vite will hot-reload changes automatically
+3. Check browser console for errors
+
+### Adding New Features
+
+1. Create new components in `src/components/`
+2. Add API calls in `src/api/`
+3. Update types in `src/types/index.ts`
+4. Add routes in `src/App.tsx`
+
+## Testing Strategy
+
+### Manual Testing Checklist
+✅ User registration with validation
+✅ User login with error handling
+✅ Change password functionality ⭐ NEW
+✅ Token persistence across page reloads
+✅ Automatic token refresh on expiry
+✅ Create task with all fields
+✅ Edit task (owner only)
+✅ Delete task (owner only)
+✅ View all tasks (public read)
+✅ Search functionality
+✅ Filter by status
+✅ Filter by priority
+✅ Sort by different fields
+✅ Pagination navigation
+✅ Due date highlighting (24 hours)
+✅ Tag management
+✅ File upload (drag & drop and click) ⭐ NEW
+✅ File download ⭐ NEW
+✅ File delete (owner only) ⭐ NEW
+✅ Audit log viewing ⭐ NEW
+✅ Audit log for attachments ⭐ NEW
+✅ Rate limiting enforcement ⭐ NEW
+✅ Rate limit error messages ⭐ NEW
+✅ Responsive design on mobile
+✅ Toast notifications
+✅ Loading states
+✅ Error handling
+✅ Logout functionality
+✅ Confirmation dialogs ⭐ NEW
+✅ Owner validation for attachments ⭐ NEW
+
+## Integration with Backend
+
+### Phase 1 & 2 APIs Used
+- ✅ POST /api/Auth/register
+- ✅ POST /api/Auth/login
+- ✅ POST /api/Auth/refresh
+- ✅ POST /api/Auth/revoke
+- ✅ POST /api/Auth/change-password ⭐ NEW
+- ✅ GET /api/Tasks (with query parameters)
+- ✅ GET /api/Tasks/{id}
+- ✅ POST /api/Tasks
+- ✅ PUT /api/Tasks/{id}
+- ✅ DELETE /api/Tasks/{id}
+- ✅ GET /api/Attachments/task/{taskId} ⭐ NEW
+- ✅ POST /api/Attachments/task/{taskId} ⭐ NEW
+- ✅ GET /api/Attachments/{id}/download ⭐ NEW
+- ✅ DELETE /api/Attachments/{id} ⭐ NEW
+- ✅ GET /api/AuditLogs/task/{taskId} ⭐ NEW
+
+### Authorization Model
+- Public read: ✅ All users can view all tasks
+- Private write: ✅ Only owners can modify their tasks
+- Error messages: ✅ Clear permission denied messages
+- Token validation: ✅ Automatic refresh on expiry
+
+## Known Limitations
+
+1. ~~**No File Attachments**~~: ✅ **IMPLEMENTED** - Full file upload/download/delete functionality
+2. ~~**No Change Password**~~: ✅ **IMPLEMENTED** - Secure password change feature
+3. **No User Profile**: Basic auth only, profile management in future phases
+4. **No Real-time Updates**: WebSocket integration planned for future phases
+5. **Limited Unit Tests**: Focus was on implementation, testing suite in future phases
+6. **No Background Jobs**: Task reminder service planned for future phases
+
+## Browser Support
+
+- ✅ Chrome/Edge (latest)
+- ✅ Firefox (latest)
+- ✅ Safari (latest)
+- ✅ Mobile Safari
+- ✅ Chrome Mobile
+
+## Accessibility Features
+
+- Semantic HTML elements
+- ARIA labels where needed
+- Keyboard navigation support
+- Focus visible states
+- Color contrast compliance
+- Form labels properly associated
+
+## Security Considerations
+
+✅ JWT tokens in localStorage (appropriate for this use case)
+✅ Automatic token refresh
+✅ HTTPS recommended for production
+✅ Input validation on client and server
+✅ CORS properly configured
+✅ No sensitive data in localStorage except tokens
+✅ Logout clears all tokens
+✅ Protected routes prevent unauthorized access
+
+## Phase 4 Bonus Features Implemented
+
+### Rate Limiting System
+**Implementation Details:**
+- **Built-in .NET 9.0 Rate Limiting**: No external dependencies
+- **Three-Tier Policy Architecture**:
+  1. **PerUserPolicy**: 100 requests/60 seconds (authenticated users)
+  2. **PerIpAuthPolicy**: 20 requests/900 seconds (login/register endpoints)
+  3. **PerIpStrictPolicy**: 10 requests/60 seconds (file uploads)
+- **Fixed Window Algorithm**: Simple and predictable
+- **Queue Support**: Allows 5 queued requests for per-user policy
+- **Custom Error Responses**: 429 status with retry-after metadata
+- **Serilog Integration**: All rate limit violations logged
+- **Configurable**: All limits adjustable via appsettings.json
+
+**Applied Controllers:**
+- `AuthController`: PerIpAuthPolicy on Login/Register
+- `TasksController`: PerUserPolicy on all endpoints
+- `AttachmentsController`: PerUserPolicy + PerIpStrictPolicy on uploads
+
+### Rate Limit Tester (Console Application)
+**Project**: TaskTracker.RateLimitTester
+- **Interactive Menu**: Beautiful CLI with Spectre.Console
+- **Three Test Scenarios**:
+  1. Test per-user rate limiting (105 requests to Tasks API)
+  2. Test per-IP auth rate limiting (25 login attempts)
+  3. Test per-IP strict rate limiting (15 file uploads)
+- **Colored Output**: Success (green), rate-limited (red), warnings (yellow)
+- **Progress Bars**: Visual feedback during test execution
+- **Summary Tables**: Detailed results with metrics
+- **Validation**: Confirms rate limiting works as expected
+
+**Features:**
+- Tracks successful vs rate-limited requests
+- Shows when rate limit hits (request number)
+- Displays retry-after information
+- Calculates average response times
+- Run all tests or individual tests
+- Exit option
 
 ## Future Enhancements (Phase 5+)
 
@@ -629,7 +833,7 @@ docker-compose down
 ## Documentation
 
 - ✅ README.md - Project overview and setup
-- ✅ PHASE3_SETUP.md - Detailed setup guide
+- ✅ Phase3_React_UI_Implementation.md - Comprehensive Phase 3 guide (this document)
 - ✅ RATE_LIMITING.md - Rate limiting documentation ⭐ NEW
 - ✅ RATE_LIMITING_QUICK_START.md - Testing guide ⭐ NEW
 - ✅ FUTURE_ENHANCEMENTS.md - Future feature roadmap ⭐ NEW
@@ -637,45 +841,13 @@ docker-compose down
 - ✅ TypeScript type definitions
 - ✅ Component documentation
 
-## Phase 4 Bonus Features Implemented
+## Support
 
-### Rate Limiting System
-**Implementation Details:**
-- **Built-in .NET 9.0 Rate Limiting**: No external dependencies
-- **Three-Tier Policy Architecture**:
-  1. **PerUserPolicy**: 100 requests/60 seconds (authenticated users)
-  2. **PerIpAuthPolicy**: 20 requests/900 seconds (login/register endpoints)
-  3. **PerIpStrictPolicy**: 10 requests/60 seconds (file uploads)
-- **Fixed Window Algorithm**: Simple and predictable
-- **Queue Support**: Allows 5 queued requests for per-user policy
-- **Custom Error Responses**: 429 status with retry-after metadata
-- **Serilog Integration**: All rate limit violations logged
-- **Configurable**: All limits adjustable via appsettings.json
-
-**Applied Controllers:**
-- `AuthController`: PerIpAuthPolicy on Login/Register
-- `TasksController`: PerUserPolicy on all endpoints
-- `AttachmentsController`: PerUserPolicy + PerIpStrictPolicy on uploads
-
-### Rate Limit Tester (Console Application)
-**Project**: TaskTracker.RateLimitTester
-- **Interactive Menu**: Beautiful CLI with Spectre.Console
-- **Three Test Scenarios**:
-  1. Test per-user rate limiting (105 requests to Tasks API)
-  2. Test per-IP auth rate limiting (25 login attempts)
-  3. Test per-IP strict rate limiting (15 file uploads)
-- **Colored Output**: Success (green), rate-limited (red), warnings (yellow)
-- **Progress Bars**: Visual feedback during test execution
-- **Summary Tables**: Detailed results with metrics
-- **Validation**: Confirms rate limiting works as expected
-
-**Features:**
-- Tracks successful vs rate-limited requests
-- Shows when rate limit hits (request number)
-- Displays retry-after information
-- Calculates average response times
-- Run all tests or individual tests
-- Exit option
+For issues or questions, check:
+1. Browser console for errors
+2. API logs in terminal
+3. Network tab in DevTools
+4. PostgreSQL connection status
 
 ## Conclusion
 
