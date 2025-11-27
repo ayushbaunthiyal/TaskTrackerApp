@@ -17,7 +17,7 @@ export const TaskList = () => {
     sortBy: 'DueDate',
     sortDescending: false,
     pageNumber: 1,
-    pageSize: 8,
+    pageSize: 10,
   });
   const [totalPages, setTotalPages] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
@@ -148,23 +148,23 @@ export const TaskList = () => {
         onCancel={cancelDelete}
       />
       
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex justify-between items-center mb-8">
+      <div className="max-w-[2000px] mx-auto px-3 sm:px-4 lg:px-6 py-4">
+        <div className="flex justify-between items-center mb-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Active Tasks</h1>
-            <p className="text-gray-600 mt-1">Manage and track Tasks</p>
+            <h1 className="text-2xl font-bold text-gray-900">Active Tasks</h1>
+            <p className="text-sm text-gray-600">Manage and track Tasks</p>
           </div>
-          <div className="flex gap-3 items-center">
+          <div className="flex gap-2 items-center">
             <Link
               to="/audit-logs"
-              className="inline-flex items-center gap-2 bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition shadow-sm"
+              className="inline-flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition shadow-sm text-sm"
             >
               <ClipboardList className="w-5 h-5" />
               Audit Logs
             </Link>
             <Link
               to="/tasks/new"
-              className="inline-flex items-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition shadow-sm"
+              className="inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition shadow-sm text-sm"
             >
               <Plus className="w-5 h-5" />
               New Task
@@ -241,8 +241,8 @@ export const TaskList = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <div className="flex gap-4 items-center">
+        <div className="bg-white rounded-lg shadow-sm p-3 mb-3">
+          <div className="flex gap-2 items-center">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
@@ -382,7 +382,7 @@ export const TaskList = () => {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
               {tasks.map((task) => {
                 const isActive = task.status !== TaskStatus.Completed && task.status !== TaskStatus.Cancelled;
                 return (

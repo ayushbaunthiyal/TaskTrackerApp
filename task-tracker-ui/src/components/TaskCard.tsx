@@ -43,7 +43,7 @@ export const TaskCard = ({ task, onDelete, isOverdue, isDueToday, isDueSoon }: T
   };
 
   // Determine border and background based on due date status
-  let cardClasses = 'bg-white rounded-lg shadow-sm hover:shadow-md transition-all p-6 cursor-pointer ';
+  let cardClasses = 'bg-white rounded-lg shadow-sm hover:shadow-md transition-all p-4 cursor-pointer ';
   if (isOverdue) {
     cardClasses += 'border-2 border-red-500 bg-red-50';
   } else if (isDueToday) {
@@ -60,27 +60,27 @@ export const TaskCard = ({ task, onDelete, isOverdue, isDueToday, isDueSoon }: T
       onClick={() => navigate(`/tasks/edit/${task.id}`)}
     >
       {isOverdue && (
-        <div className="flex items-center gap-2 text-red-700 text-sm font-medium mb-3 bg-red-100 px-3 py-2 rounded">
+        <div className="flex items-center gap-2 text-red-700 text-sm font-medium mb-2 bg-red-100 px-2 py-1 rounded">
           <AlertCircle className="w-4 h-4" />
           Overdue
         </div>
       )}
       {isDueToday && (
-        <div className="flex items-center gap-2 text-orange-700 text-sm font-medium mb-3 bg-orange-100 px-3 py-2 rounded">
+        <div className="flex items-center gap-2 text-orange-700 text-sm font-medium mb-2 bg-orange-100 px-2 py-1 rounded">
           <AlertCircle className="w-4 h-4" />
           Due Today
         </div>
       )}
       {isDueSoon && (
-        <div className="flex items-center gap-2 text-yellow-700 text-sm font-medium mb-3 bg-yellow-50 px-3 py-2 rounded">
+        <div className="flex items-center gap-2 text-yellow-700 text-sm font-medium mb-2 bg-yellow-50 px-2 py-1 rounded">
           <AlertCircle className="w-4 h-4" />
           Due Soon
         </div>
       )}
       
-      <div className="flex justify-between items-start mb-4">
+      <div className="flex justify-between items-start mb-3">
         <div className="flex-1 pr-2">
-          <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">{task.title}</h3>
+          <h3 className="text-base font-semibold text-gray-900 line-clamp-2">{task.title}</h3>
           <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
             <User className="w-3 h-3" />
             <span>{task.userName}</span>
@@ -105,19 +105,19 @@ export const TaskCard = ({ task, onDelete, isOverdue, isDueToday, isDueSoon }: T
         </div>
       </div>
 
-      <p className="text-gray-600 text-sm mb-4 line-clamp-3">{task.description}</p>
+      <p className="text-gray-600 text-sm mb-3 line-clamp-3">{task.description}</p>
 
-      <div className="flex flex-wrap gap-2 mb-4">
-        <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusColors[task.status]}`}>
+      <div className="flex flex-wrap gap-2 mb-3">
+        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusColors[task.status]}`}>
           {statusLabels[task.status]}
         </span>
-        <span className={`px-3 py-1 rounded-full text-xs font-medium ${priorityColors[task.priority]}`}>
+        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${priorityColors[task.priority]}`}>
           {priorityLabels[task.priority]}
         </span>
       </div>
 
       {task.tags.length > 0 && (
-        <div className="flex items-center gap-2 mb-4 flex-wrap">
+        <div className="flex items-center gap-2 mb-2 flex-wrap">
           <Tag className="w-4 h-4 text-gray-400" />
           {task.tags.map((tag, index) => (
             <span key={index} className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded">
