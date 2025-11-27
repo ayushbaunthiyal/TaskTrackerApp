@@ -1,19 +1,21 @@
-# Phase 3: React UI Implementation
+# Phase 3: React UI Implementation + Phase 4 Enhancements
 
 ## Overview
-Phase 3 focused on building a modern, responsive React TypeScript UI that integrates seamlessly with the Task Tracker API created in Phases 1 and 2. The UI provides a complete task management experience with JWT authentication, advanced search, and real-time feedback.
+Phase 3 focused on building a modern, responsive React TypeScript UI that integrates seamlessly with the Task Tracker API created in Phases 1 and 2. The UI provides a complete task management experience with JWT authentication, advanced search, file attachments, audit logging, and real-time feedback. Additionally, Phase 4 enhancements were implemented including rate limiting and comprehensive testing tools.
 
 ## Completion Date
-November 26, 2025
+November 27, 2025
 
 ## Key Features Implemented
 
 ### 1. Authentication & Authorization
-- **User Registration**: Clean form with validation
+- **User Registration**: Clean form with validation (first name, last name, email, password, confirm password)
 - **User Login**: Secure JWT-based authentication
+- **Change Password**: Secure password change functionality for authenticated users
 - **Auto Token Refresh**: Automatic token renewal on 401 errors
 - **Protected Routes**: Only authenticated users can access tasks
 - **Logout Functionality**: Proper cleanup of tokens and session
+- **JWT Decode Utility**: Extract user information from tokens (user ID, email, name)
 
 ### 2. Modern UI/UX Design
 - **Gradient Backgrounds**: Beautiful blue-to-indigo gradients
@@ -53,6 +55,36 @@ November 26, 2025
 - **Validation**: Prevents duplicate tags
 - **Keyboard Support**: Press Enter to add tag
 
+### 7. File Attachments ⭐ NEW
+- **Upload Files**: Drag & drop or click to upload (max 10MB per file)
+- **Multiple Files**: Support for multiple file uploads
+- **File List**: Display all attachments with name, size, and upload date
+- **Download Files**: Download attachments with proper content types
+- **Delete Attachments**: Remove attachments (owner only)
+- **Owner Validation**: Only task owners can upload/delete attachments
+- **File Type Support**: PDF, Word, Excel, images, text, ZIP files
+- **Visual Feedback**: Upload progress, file icons, and size formatting
+- **Storage**: Files stored in `Uploads/` directory on server
+
+### 8. Audit Trail ⭐ NEW
+- **Action Logging**: Track all task changes (created, updated, deleted, completed)
+- **Attachment Logging**: Track file uploads and deletions
+- **User Information**: Display who performed each action
+- **Timestamps**: Show when each action occurred
+- **Expandable Timeline**: Collapsible audit log in task form
+- **Visual Design**: Timeline-style display with icons and colors
+- **Real-time Updates**: Audit logs refresh when viewing task details
+
+### 9. Rate Limiting ⭐ NEW (Phase 4)
+- **Three-Tier Policies**: Per-user, per-IP auth, and per-IP strict limiting
+- **Per-User Limiting**: 100 requests per minute for authenticated endpoints
+- **Auth Protection**: 20 requests per 15 minutes for login/register (brute-force prevention)
+- **Upload Protection**: 10 requests per minute for file uploads
+- **Meaningful Errors**: 429 responses with retry-after information
+- **Serilog Integration**: Rate limit violations logged for monitoring
+- **Configurable**: Adjust limits via appsettings.json
+- **Fixed Window Algorithm**: Simple, predictable rate limiting
+
 ## Technical Implementation
 
 ### Frontend Stack
@@ -66,6 +98,14 @@ November 26, 2025
 - **date-fns 3.0**: Modern date utilities
 - **Lucide React 0.294**: Beautiful icon set
 
+### Backend Enhancements
+- **.NET 9.0**: Latest .NET with enhanced performance
+- **Rate Limiting**: Built-in ASP.NET Core rate limiting (Microsoft.AspNetCore.RateLimiting)
+- **File Storage**: Physical file storage with ownership validation
+- **Audit Service**: Comprehensive action logging
+- **Enhanced DTOs**: AttachmentDto, AuditLogDto, ChangePasswordDto
+- **Serilog**: Structured logging with rate limit monitoring
+
 ### Project Structure
 ```
 task-tracker-ui/
@@ -73,18 +113,26 @@ task-tracker-ui/
 │   ├── api/              # API integration layer
 │   │   ├── axiosConfig.ts    # Axios setup with interceptors
 │   │   ├── authApi.ts        # Authentication endpoints
-│   │   └── taskApi.ts        # Task CRUD endpoints
+│   │   ├── taskApi.ts        # Task CRUD endpoints
+│   │   ├── attachmentApi.ts  # File attachment endpoints ⭐ NEW
+│   │   └── auditLogApi.ts    # Audit log endpoints ⭐ NEW
 │   ├── components/       # React components
 │   │   ├── Login.tsx         # Login page
 │   │   ├── Register.tsx      # Registration page
 │   │   ├── TaskList.tsx      # Main task list view
 │   │   ├── TaskCard.tsx      # Individual task card
 │   │   ├── TaskForm.tsx      # Create/Edit form
-│   │   └── ProtectedRoute.tsx # Route guard
+│   │   ├── ProtectedRoute.tsx # Route guard
+│   │   ├── FileUpload.tsx    # File upload component ⭐ NEW
+│   │   ├── AuditTrail.tsx    # Audit log timeline ⭐ NEW
+│   │   ├── ChangePassword.tsx # Password change form ⭐ NEW
+│   │   └── ConfirmDialog.tsx # Reusable confirmation dialog ⭐ NEW
 │   ├── context/          # React contexts
 │   │   └── AuthContext.tsx   # Authentication state
 │   ├── types/            # TypeScript definitions
 │   │   └── index.ts          # All type definitions
+│   ├── utils/            # Utility functions
+│   │   └── jwt.ts            # JWT decode utilities ⭐ NEW
 │   ├── App.tsx           # Main application
 │   ├── main.tsx          # Entry point
 │   └── index.css         # Global styles
@@ -111,6 +159,7 @@ task-tracker-ui/
 ```typescript
 - login(email, password): LoginResponse
 - register(userData): LoginResponse
+- changePassword(currentPassword, newPassword): void ⭐ NEW
 - logout(): void
 ```
 
@@ -121,6 +170,19 @@ task-tracker-ui/
 - createTask(taskData): Task
 - updateTask(id, taskData): Task
 - deleteTask(id): void
+```
+
+#### Attachment API ⭐ NEW
+```typescript
+- getTaskAttachments(taskId): Attachment[]
+- uploadAttachment(taskId, file): Attachment
+- downloadAttachment(attachmentId): void (triggers download)
+- deleteAttachment(attachmentId): void
+```
+
+#### Audit Log API ⭐ NEW
+```typescript
+- getTaskAuditLogs(taskId): AuditLog[]
 ```
 
 ### State Management
@@ -190,6 +252,48 @@ task-tracker-ui/
 - Shows loading spinner
 - Redirects to login if not authenticated
 - Preserves intended route
+
+### File Upload Component ⭐ NEW
+- Drag & drop zone with visual feedback
+- Click to browse files
+- Multiple file selection
+- File list with name, size, upload date
+- Download and delete buttons
+- Owner-only upload/delete restrictions
+- File size validation (10MB max)
+- Progress indication during upload
+- Beautiful file icons
+- Responsive design
+
+### Audit Trail Component ⭐ NEW
+- Collapsible timeline view
+- Action type indicators (created, updated, deleted, etc.)
+- User and timestamp for each action
+- Color-coded action types
+- Attachment-specific events
+- Empty state when no logs
+- Smooth expand/collapse animation
+- Historical view of all task changes
+
+### Change Password Component ⭐ NEW
+- Current password field
+- New password field
+- Confirm new password field
+- Password strength validation
+- Error handling and display
+- Success notification
+- Form validation (matching passwords)
+- Secure password update
+- Modal or page layout
+
+### Confirm Dialog Component ⭐ NEW
+- Reusable confirmation dialog
+- Customizable title and message
+- Danger/warning variants
+- Confirm and cancel actions
+- Used for delete confirmations
+- Modal overlay
+- Keyboard support (Escape to cancel)
 
 ## Color Scheme
 
@@ -314,6 +418,7 @@ VITE_API_BASE_URL=http://tasktracker-api:5128/api
 ### Manual Testing Checklist
 ✅ User registration with validation
 ✅ User login with error handling
+✅ Change password functionality ⭐ NEW
 ✅ Token persistence across page reloads
 ✅ Automatic token refresh on expiry
 ✅ Create task with all fields
@@ -327,19 +432,29 @@ VITE_API_BASE_URL=http://tasktracker-api:5128/api
 ✅ Pagination navigation
 ✅ Due date highlighting (24 hours)
 ✅ Tag management
+✅ File upload (drag & drop and click) ⭐ NEW
+✅ File download ⭐ NEW
+✅ File delete (owner only) ⭐ NEW
+✅ Audit log viewing ⭐ NEW
+✅ Audit log for attachments ⭐ NEW
+✅ Rate limiting enforcement ⭐ NEW
+✅ Rate limit error messages ⭐ NEW
 ✅ Responsive design on mobile
 ✅ Toast notifications
 ✅ Loading states
 ✅ Error handling
 ✅ Logout functionality
+✅ Confirmation dialogs ⭐ NEW
+✅ Owner validation for attachments ⭐ NEW
 
 ## Known Limitations
 
-1. **No File Attachments**: Phase 3 focused on core UI, attachments deferred to Phase 4
-2. **No Change Password**: To be implemented in Phase 4
-3. **No User Profile**: Basic auth only, profile management in Phase 4
-4. **No Real-time Updates**: WebSocket integration planned for Phase 4
-5. **Limited Unit Tests**: Focus was on implementation, testing suite in Phase 4
+1. ~~**No File Attachments**~~: ✅ **IMPLEMENTED** - Full file upload/download/delete functionality
+2. ~~**No Change Password**~~: ✅ **IMPLEMENTED** - Secure password change feature
+3. **No User Profile**: Basic auth only, profile management in future phases
+4. **No Real-time Updates**: WebSocket integration planned for future phases
+5. **Limited Unit Tests**: Focus was on implementation, testing suite in future phases
+6. **No Background Jobs**: Task reminder service planned for future phases
 
 ## Browser Support
 
@@ -376,11 +491,17 @@ VITE_API_BASE_URL=http://tasktracker-api:5128/api
 - ✅ POST /api/Auth/login
 - ✅ POST /api/Auth/refresh
 - ✅ POST /api/Auth/revoke
+- ✅ POST /api/Auth/change-password ⭐ NEW
 - ✅ GET /api/Tasks (with filters)
 - ✅ GET /api/Tasks/{id}
 - ✅ POST /api/Tasks
 - ✅ PUT /api/Tasks/{id}
 - ✅ DELETE /api/Tasks/{id}
+- ✅ GET /api/Attachments/task/{taskId} ⭐ NEW
+- ✅ POST /api/Attachments/task/{taskId} ⭐ NEW
+- ✅ GET /api/Attachments/{id}/download ⭐ NEW
+- ✅ DELETE /api/Attachments/{id} ⭐ NEW
+- ✅ GET /api/AuditLogs/task/{taskId} ⭐ NEW
 
 ### Authorization Model
 - Public read: ✅ All users can view all tasks
@@ -427,20 +548,31 @@ docker-compose up --build
 docker-compose down
 ```
 
-## Future Enhancements (Phase 4+)
+## Future Enhancements (Phase 5+)
 
 ### Planned Features
-- 📎 File Attachments
-  - Upload files to tasks
-  - View/download attachments
-  - Delete attachments
-  - File size/type restrictions
+- ~~📎 File Attachments~~: ✅ **COMPLETED**
+  - ~~Upload files to tasks~~
+  - ~~View/download attachments~~
+  - ~~Delete attachments~~
+  - ~~File size/type restrictions~~
 
-- 🔐 User Management
-  - Change password
+- ~~🔐 User Management~~: ✅ **PARTIALLY COMPLETED**
+  - ~~Change password~~ ✅
   - User profile page
   - Avatar upload
   - Account settings
+
+- 🔄 **Rate Limiting**: ✅ **COMPLETED**
+  - ~~Per-user rate limiting~~
+  - ~~Per-IP authentication limiting~~
+  - ~~Per-IP strict upload limiting~~
+  - ~~Rate limit testing tool~~
+
+- 🧪 **Testing Tools**: ✅ **COMPLETED**
+  - ~~Console rate limit tester~~
+  - ~~Interactive test menu~~
+  - ~~Colored console output~~
 
 - 📧 Notifications
   - Email reminders
@@ -466,6 +598,11 @@ docker-compose down
   - Live task updates
   - Collaborative editing
   - Online user indicators
+
+- ⚙️ Background Services
+  - Task reminder worker (24-hour warnings)
+  - Scheduled jobs
+  - Email notifications
 
 ## Success Metrics
 
@@ -493,31 +630,91 @@ docker-compose down
 
 - ✅ README.md - Project overview and setup
 - ✅ PHASE3_SETUP.md - Detailed setup guide
+- ✅ RATE_LIMITING.md - Rate limiting documentation ⭐ NEW
+- ✅ RATE_LIMITING_QUICK_START.md - Testing guide ⭐ NEW
+- ✅ FUTURE_ENHANCEMENTS.md - Future feature roadmap ⭐ NEW
 - ✅ Inline code comments
 - ✅ TypeScript type definitions
 - ✅ Component documentation
 
+## Phase 4 Bonus Features Implemented
+
+### Rate Limiting System
+**Implementation Details:**
+- **Built-in .NET 9.0 Rate Limiting**: No external dependencies
+- **Three-Tier Policy Architecture**:
+  1. **PerUserPolicy**: 100 requests/60 seconds (authenticated users)
+  2. **PerIpAuthPolicy**: 20 requests/900 seconds (login/register endpoints)
+  3. **PerIpStrictPolicy**: 10 requests/60 seconds (file uploads)
+- **Fixed Window Algorithm**: Simple and predictable
+- **Queue Support**: Allows 5 queued requests for per-user policy
+- **Custom Error Responses**: 429 status with retry-after metadata
+- **Serilog Integration**: All rate limit violations logged
+- **Configurable**: All limits adjustable via appsettings.json
+
+**Applied Controllers:**
+- `AuthController`: PerIpAuthPolicy on Login/Register
+- `TasksController`: PerUserPolicy on all endpoints
+- `AttachmentsController`: PerUserPolicy + PerIpStrictPolicy on uploads
+
+### Rate Limit Tester (Console Application)
+**Project**: TaskTracker.RateLimitTester
+- **Interactive Menu**: Beautiful CLI with Spectre.Console
+- **Three Test Scenarios**:
+  1. Test per-user rate limiting (105 requests to Tasks API)
+  2. Test per-IP auth rate limiting (25 login attempts)
+  3. Test per-IP strict rate limiting (15 file uploads)
+- **Colored Output**: Success (green), rate-limited (red), warnings (yellow)
+- **Progress Bars**: Visual feedback during test execution
+- **Summary Tables**: Detailed results with metrics
+- **Validation**: Confirms rate limiting works as expected
+
+**Features:**
+- Tracks successful vs rate-limited requests
+- Shows when rate limit hits (request number)
+- Displays retry-after information
+- Calculates average response times
+- Run all tests or individual tests
+- Exit option
+
 ## Conclusion
 
-Phase 3 successfully delivered a modern, feature-rich React UI that provides an excellent user experience for task management. The implementation leverages the robust API from Phases 1 and 2, maintaining the authorization model (public read, private write) while providing intuitive visual feedback and error handling.
+Phase 3 successfully delivered a modern, feature-rich React UI that provides an excellent user experience for task management. Beyond the original scope, we also implemented critical Phase 4 features including file attachments, audit logging, change password functionality, and comprehensive rate limiting.
 
 The UI is production-ready with:
-- ✅ Complete authentication flow
+- ✅ Complete authentication flow (login, register, change password)
 - ✅ Full task CRUD operations
 - ✅ Advanced search and filtering
+- ✅ File attachment management (upload, download, delete) ⭐
+- ✅ Audit trail for all actions ⭐
+- ✅ Rate limiting protection ⭐
+- ✅ Rate limit testing tools ⭐
 - ✅ Responsive design
 - ✅ Docker deployment support
 - ✅ Proper error handling
 - ✅ Loading states
 - ✅ Toast notifications
+- ✅ Ownership validation
+- ✅ Confirmation dialogs
 
-The application is now ready for Phase 4 enhancements including file attachments, user management, and real-time features.
+**Major Achievements:**
+1. **Complete Feature Set**: All originally planned Phase 3 features plus Phase 4 bonuses
+2. **Security Hardening**: Rate limiting, ownership validation, secure file storage
+3. **Professional UI/UX**: Polished interface with excellent user feedback
+4. **Comprehensive Testing**: Rate limit tester application for validation
+5. **Production Ready**: Docker support, logging, error handling
+6. **Well Documented**: Multiple guides and inline documentation
+
+The application now has a solid foundation for future enhancements including background services, real-time features, and advanced analytics.
 
 ---
 
-**Status**: ✅ **COMPLETED**  
-**Components**: 7 React components  
-**API Integration**: Fully functional  
+**Status**: ✅ **COMPLETED (Phase 3 + Phase 4 Enhancements)**  
+**Total Components**: 11 React components (7 original + 4 new)  
+**API Integration**: Fully functional with 15 endpoints  
 **Responsive Design**: Mobile, Tablet, Desktop  
 **Docker Ready**: Yes  
-**Ready for**: Phase 4 Development
+**Rate Limiting**: Implemented and tested  
+**File Attachments**: Fully functional  
+**Audit Logging**: Complete timeline  
+**Ready for**: Phase 5 Development (Background Services, Notifications)

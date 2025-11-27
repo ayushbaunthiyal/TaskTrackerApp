@@ -84,3 +84,28 @@ export interface TaskFilters {
   pageNumber: number;
   pageSize: number;
 }
+
+export interface AuditLogListDto {
+  id: string;
+  userId?: string;
+  userName?: string;
+  userEmail?: string;
+  action: string;
+  entityType: string;
+  entityId: string;
+  timestamp: string;
+  details: string;
+}
+
+export interface AuditLogFilters {
+  searchTerm?: string;
+  userEmail?: string;
+  entityType?: string;
+  action?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  sortBy?: string;
+  sortDescending?: boolean;
+  pageNumber: number;
+  pageSize: number;
+}

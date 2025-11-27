@@ -373,6 +373,10 @@ $RECYCLE.BIN/
 .env.test.local
 .env.production.local
 
+# Configuration files with API keys and secrets
+TaskTracker.Worker/appsettings.json
+docker-compose.yml
+
 # Database files
 *.db
 *.db-shm

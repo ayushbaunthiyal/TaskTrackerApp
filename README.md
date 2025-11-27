@@ -36,6 +36,18 @@ A modern full-stack Task Tracker application built with .NET 9 Web API, React Ty
 - ✅ Tailwind CSS Styling
 - ✅ Docker Ready
 
+### Phase 4 Enhancements
+- ✅ File Attachments (Upload, Download, Delete)
+- ✅ Audit Trail with Timeline View
+- ✅ Rate Limiting (Per-user, Per-IP, Strict mode)
+- ✅ Change Password Feature
+- ✅ **Background Worker Service** (NEW!)
+  - Email notifications via Mailgun
+  - Smart reminder scheduling (24-hour lookahead)
+  - Idempotent email delivery (one reminder per task)
+  - Email quota management (90/day limit)
+  - Docker deployment ready
+
 ## Prerequisites
 
 - [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
@@ -177,7 +189,21 @@ TaskTrackerApp/
 │   ├── Controllers/
 │   ├── Middleware/
 │   └── Program.cs
-└── docker-compose.yml           # PostgreSQL container configuration
+├── TaskTracker.Worker/          # Background service for reminders (NEW!)
+│   ├── Services/
+│   │   ├── MailgunEmailService.cs
+│   │   ├── ReminderService.cs
+│   │   └── ReminderHostedService.cs
+│   ├── Configuration/
+│   ├── Program.cs
+│   └── README.md
+├── task-tracker-ui/             # React TypeScript frontend
+│   ├── src/
+│   │   ├── components/
+│   │   ├── context/
+│   │   └── types/
+│   └── package.json
+└── docker-compose.yml           # Full stack deployment
 ```
 
 ## Database Schema
@@ -254,15 +280,110 @@ docker-compose down
 docker-compose down -v
 ```
 
-## Next Steps (Upcoming Features)
+## Background Worker Service (NEW!)
 
-- JWT-based authentication
-- Role-based authorization
-- File upload/download for attachments
-- Background worker for reminders
-- Rate limiting
-- React frontend
-- Unit and integration tests
+The TaskTracker.Worker service sends email reminders for upcoming tasks.
+
+### Features
+
+- **Scheduled Checks**: Runs every 30-60 minutes
+- **Email Notifications**: Beautiful HTML emails via Mailgun
+- **Idempotency**: Each task gets ONE reminder (tracked via audit log)
+- **Smart Filtering**: Only tasks due within 24 hours
+- **Quota Management**: Respects 90 emails/day limit
+- **Docker Ready**: Fully containerized
+
+### Quick Start
+
+```powershell
+# 1. Start PostgreSQL
+docker-compose up -d postgres
+
+# 2. Configure Mailgun
+# Add your API key and domain to TaskTracker.Worker/appsettings.json
+
+# 3. Add authorized recipient
+# Go to Mailgun dashboard and authorize your email
+
+# 4. Run worker
+cd TaskTracker.Worker
+dotnet run
+```
+
+### Configuration
+
+See `TaskTracker.Worker/README.md` for detailed configuration options.
+
+Key settings in `appsettings.json`:
+
+```json
+{
+  "MailgunSettings": {
+    "ApiKey": "your-mailgun-api-key",
+    "Domain": "your-mailgun-domain"
+  },
+  "WorkerSettings": {
+    "CheckIntervalMinutes": 30,
+    "DueDateLookaheadHours": 24,
+    "DailyEmailQuota": 90
+  }
+}
+```
+
+### How It Works
+
+1. Worker runs every N minutes (configurable)
+2. Finds tasks due within 24 hours that haven't received reminders
+3. Sends beautiful HTML email to task owner
+4. Logs reminder in audit trail (prevents duplicates)
+5. Respects daily email quota (stops at 90/day)
+
+### Testing
+
+```powershell
+# Run test script
+cd TaskTracker.Worker
+.\test-worker.ps1
+
+# Create test tasks with due dates in next 24 hours
+# Check your email for reminders
+# Verify no duplicates are sent
+```
+
+## Running with Docker
+
+### Start Full Stack
+
+```bash
+# Start all services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop all services
+docker-compose down
+```
+
+Services available:
+- **PostgreSQL**: localhost:5433
+- **API**: localhost:5128
+- **Worker**: Background service (no ports)
+
+## Next Steps (Future Enhancements)
+
+- ✅ JWT authentication
+- ✅ Role-based authorization  
+- ✅ File upload/download for attachments
+- ✅ Background worker for reminders
+- ✅ Rate limiting
+- ✅ React frontend
+- ⏳ Comprehensive unit tests
+- ⏳ Integration tests
+- ⏳ Application metrics (Prometheus)
+- ⏳ API versioning
+- ⏳ GraphQL endpoint
+- ⏳ Real-time notifications (SignalR)
 
 ## License
 

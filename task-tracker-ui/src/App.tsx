@@ -6,6 +6,7 @@ import { Register } from './components/Register';
 import { TaskList } from './components/TaskList';
 import { TaskForm } from './components/TaskForm';
 import { ChangePassword } from './components/ChangePassword';
+import { AuditLogs } from './components/AuditLogs';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
@@ -69,6 +70,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <ChangePassword />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/audit-logs"
+            element={
+              <ProtectedRoute>
+                <AuditLogs />
               </ProtectedRoute>
             }
           />

@@ -1,0 +1,85 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: tasktracker-postgres
+    environment:
+      POSTGRES_DB: tasktracker
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d tasktracker"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - tasktracker-network
+
+  # API service will be added here when needed
+  # api:
+  #   build:
+  #     context: .
+  #     dockerfile: TaskTracker.API/Dockerfile
+  #   container_name: tasktracker-api
+  #   environment:
+  #     - ASPNETCORE_ENVIRONMENT=Production
+  #     - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=tasktracker;Username=postgres;Password=postgres
+  #     - ASPNETCORE_URLS=http://+:5128
+  #   ports:
+  #     - "5128:5128"
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #   networks:
+  #     - tasktracker-network
+
+  # UI service will be added here when needed
+  # ui:
+  #   build:
+  #     context: ./task-tracker-ui
+  #     dockerfile: Dockerfile
+  #   container_name: tasktracker-ui
+  #   ports:
+  #     - "3000:80"
+  #   depends_on:
+  #     - api
+  #   networks:
+  #     - tasktracker-network
+
+  worker:
+    build:
+      context: .
+      dockerfile: TaskTracker.Worker/Dockerfile
+    container_name: tasktracker-worker
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=tasktracker;Username=postgres;Password=postgres
+      - MailgunSettings__ApiKey=YOUR_MAILGUN_API_KEY
+      - MailgunSettings__Domain=YOUR_MAILGUN_DOMAIN
+      - MailgunSettings__BaseUrl=https://api.mailgun.net/v3
+      - MailgunSettings__FromEmail=TaskTracker <noreply@YOUR_MAILGUN_DOMAIN>
+      - MailgunSettings__FromName=TaskTracker Reminder Service
+      - WorkerSettings__CheckIntervalMinutes=60
+      - WorkerSettings__DueDateLookaheadHours=24
+      - WorkerSettings__MaxEmailsPerRun=50
+      - WorkerSettings__DailyEmailQuota=90
+      - WorkerSettings__EnableEmailSending=true
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - tasktracker-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  tasktracker-network:
+    driver: bridge
