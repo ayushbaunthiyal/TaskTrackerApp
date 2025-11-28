@@ -23,10 +23,37 @@ notepad .env
 ```
 
 **Important variables to verify:**
+
+**Database Settings:**
+- `POSTGRES_DB` - Database name (default: TaskTrackerDB)
+- `POSTGRES_USER` - Database user (default: tasktracker_user)
+- `POSTGRES_PASSWORD` - Database password (⚠️ change in production!)
+- `POSTGRES_HOST_PORT` - Host port for database (default: 5433)
+
+**JWT Authentication:**
+- `JWT_SECRET` - Secret key for JWT tokens (⚠️ must be at least 32 characters!)
+- `JWT_ISSUER` - Token issuer (default: TaskTrackerAPI)
+- `JWT_AUDIENCE` - Token audience (default: TaskTrackerClient)
+- `JWT_ACCESS_TOKEN_EXPIRES_MINUTES` - Access token lifetime (default: 60)
+- `JWT_REFRESH_TOKEN_EXPIRES_DAYS` - Refresh token lifetime (default: 7)
+
+**Mailgun Email Settings:**
 - `MAILGUN_API_KEY` - Your Mailgun API key
-- `MAILGUN_DOMAIN` - Your Mailgun domain
-- `POSTGRES_PASSWORD` - Database password
-- `JWT_SECRET` - Secret key for JWT tokens
+- `MAILGUN_DOMAIN` - Your Mailgun domain (e.g., sandbox...mailgun.org)
+- `MAILGUN_FROM_EMAIL` - From email address
+- `MAILGUN_FROM_NAME` - From name (default: TaskTracker Reminder Service)
+
+**Worker Configuration:**
+- `WORKER_CHECK_INTERVAL_MINUTES` - How often to check for tasks (default: 60)
+- `WORKER_LOOKAHEAD_HOURS` - How far ahead to look for due tasks (default: 24)
+- `WORKER_MAX_EMAILS_PER_RUN` - Max emails per check cycle (default: 50)
+- `WORKER_DAILY_EMAIL_QUOTA` - Daily email limit (default: 90)
+- `WORKER_ENABLE_EMAIL_SENDING` - Enable/disable emails (default: true)
+
+**Service Ports:**
+- `API_PORT` - API port (default: 5128)
+- `UI_PORT` - UI port (default: 3000)
+- `API_ENVIRONMENT` - Environment (Development/Production)
 
 ### 3. Build and Start All Services
 ```powershell
@@ -59,6 +86,15 @@ docker-compose ps
 
 You should see all 4 services as "Up" and "healthy".
 
+**Expected Output:**
+```
+NAME                   STATUS              PORTS
+tasktracker-api        Up (healthy)        0.0.0.0:5128->5128/tcp
+tasktracker-postgres   Up (healthy)        0.0.0.0:5433->5432/tcp
+tasktracker-ui         Up                  0.0.0.0:3000->80/tcp
+tasktracker-worker     Up (healthy)        0.0.0.0:5129->5129/tcp
+```
+
 ### Access the Application
 
 | Service | URL | Description |
@@ -66,7 +102,9 @@ You should see all 4 services as "Up" and "healthy".
 | **UI** | http://localhost:3000 | React frontend |
 | **API** | http://localhost:5128/swagger | Swagger API docs |
 | **API Health** | http://localhost:5128/health | API health check |
+| **API Metrics** | http://localhost:5128/metrics | Prometheus metrics |
 | **Worker Health** | http://localhost:5129/health | Worker health check |
+| **Worker Metrics** | http://localhost:5129/metrics | Worker Prometheus metrics |
 | **Database** | localhost:5433 | PostgreSQL (use DBeaver/pgAdmin) |
 
 ### View Logs
@@ -204,6 +242,13 @@ notepad .env
 curl http://localhost:5129/health
 ```
 
+**Common Issues:**
+- **Mailgun Sandbox Domain**: Free accounts require authorized recipients. Add your email in Mailgun dashboard.
+- **Email Quota Reached**: Worker respects 90 emails/day limit. Check logs for quota messages.
+- **No Tasks Due**: Worker only sends reminders for tasks due within 24 hours.
+- **Already Sent**: Worker tracks sent reminders via audit log (won't send duplicates).
+- **Email Disabled**: Check `WORKER_ENABLE_EMAIL_SENDING=true` in .env
+
 ### UI not loading?
 ```powershell
 # Check UI logs
@@ -269,6 +314,15 @@ docker-compose down -v
 docker-compose up -d
 ```
 
+### Check Database Connection
+```powershell
+# From inside container
+docker exec -it tasktracker-postgres psql -U tasktracker_user -d TaskTrackerDB -c "\dt"
+
+# View all tables
+docker exec -it tasktracker-postgres psql -U tasktracker_user -d TaskTrackerDB -c "SELECT tablename FROM pg_tables WHERE schemaname = 'public';"
+```
+
 ## 📦 Docker Volumes
 
 Persistent data is stored in volumes:
@@ -288,11 +342,14 @@ docker-compose down -v
 
 ## 🔐 Security Notes
 
-- ⚠️ `.env` file contains secrets - **NEVER commit to Git**
-- ⚠️ Change default passwords in production
-- ⚠️ Use strong JWT secret in production
-- ⚠️ Configure proper Mailgun API keys
-- ⚠️ Update `AllowedHosts` in production
+- ⚠️ `.env` file contains secrets - **NEVER commit to Git** (already in .gitignore)
+- ⚠️ Change default passwords in production (`POSTGRES_PASSWORD`)
+- ⚠️ Use strong JWT secret in production (minimum 32 characters)
+- ⚠️ Configure proper Mailgun API keys (avoid exposing sandbox keys)
+- ⚠️ Update CORS settings in production (currently allows all origins)
+- ⚠️ Enable HTTPS in production environments
+- ⚠️ Review rate limiting settings for your use case
+- ⚠️ Set `WORKER_ENABLE_EMAIL_SENDING=false` in development if testing without emails
 
 ## 📈 Monitoring
 
@@ -312,14 +369,100 @@ docker-compose down -v
 
 For production deployment:
 
-1. Update `.env` with production values
-2. Change `API_ENVIRONMENT=Production`
-3. Use strong passwords and secrets
-4. Configure proper domain names
-5. Add SSL/TLS certificates
-6. Set up monitoring and alerting
-7. Configure backup strategy
-8. Review security settings
+1. **Environment Configuration**
+   - Update `.env` with production values
+   - Change `API_ENVIRONMENT=Production`
+   - Set strong `POSTGRES_PASSWORD` (16+ characters)
+   - Generate secure `JWT_SECRET` (32+ characters)
+   - Use production Mailgun domain (not sandbox)
+
+2. **Security Hardening**
+   - Enable HTTPS/TLS for all services
+   - Configure CORS to allow only your domain
+   - Update rate limiting thresholds
+   - Use secrets management (Azure Key Vault, AWS Secrets Manager)
+   - Enable database encryption at rest
+
+3. **Monitoring & Observability**
+   - Set up Prometheus + Grafana for metrics
+   - Configure alerts for health check failures
+   - Set up log aggregation (ELK, Splunk, or similar)
+   - Monitor disk usage for log volumes
+   - Track email quota usage
+
+4. **Backup & Recovery**
+   - Schedule automated PostgreSQL backups
+   - Test restore procedures regularly
+   - Store backups in separate location
+   - Document recovery procedures
+
+5. **Performance Optimization**
+   - Adjust worker intervals based on load
+   - Configure connection pooling
+   - Enable database query caching
+   - Review and optimize slow queries
+
+6. **Deployment Strategy**
+   - Use Docker Swarm or Kubernetes for orchestration
+   - Implement blue-green or rolling deployments
+   - Set up health checks and auto-restart policies
+   - Configure resource limits (CPU, memory)
+
+## 🧪 Testing in Docker
+
+### Create Test Tasks
+```powershell
+# Access API to create tasks due soon
+curl -X POST http://localhost:5128/api/auth/login `
+  -H "Content-Type: application/json" `
+  -d '{"email":"john.doe@example.com","password":"Password123!"}'
+
+# Use returned token to create task
+curl -X POST http://localhost:5128/api/tasks `
+  -H "Content-Type: application/json" `
+  -H "Authorization: Bearer YOUR_TOKEN" `
+  -d '{"title":"Test Task","dueDate":"2025-11-29T10:00:00Z"}'
+```
+
+### Verify Worker Processing
+```powershell
+# Watch worker logs in real-time
+docker-compose logs -f worker
+
+# Look for:
+# - "Found X tasks needing reminders"
+# - "Successfully sent reminder email"
+# - "Reminder already sent for task"
+```
+
+### Test Email Delivery
+1. Add your email as authorized recipient in Mailgun
+2. Create task with due date in next 24 hours
+3. Wait for worker check interval (default: 60 minutes)
+4. Check your email inbox
+5. Verify audit log shows reminder sent
+
+## 📊 Resource Usage
+
+**Typical Resource Requirements:**
+- **PostgreSQL**: ~100MB RAM, 500MB disk
+- **API**: ~150MB RAM, 100MB disk (logs)
+- **Worker**: ~100MB RAM, 50MB disk (logs)
+- **UI (Nginx)**: ~10MB RAM, 50MB disk
+- **Total**: ~400MB RAM, ~700MB disk
+
+**Monitoring Resources:**
+```powershell
+# Real-time resource usage
+docker stats
+
+# Disk usage
+docker system df
+
+# Volume sizes
+docker volume ls
+docker volume inspect tasktracker_postgres_data
+```
 
 ## 📞 Support
 
@@ -328,6 +471,15 @@ If you encounter issues:
 2. Verify health checks: `docker-compose ps`
 3. Review this guide's troubleshooting section
 4. Check Docker Desktop dashboard
+5. Verify all required ports are available
+6. Ensure .env file is properly configured
+
+## 📚 Additional Resources
+
+- **Phase 5 Documentation**: See `Phases/Phase5_Monitoring_Metrics_HealthChecks_Docker.md`
+- **Worker Service Guide**: See `TaskTracker.Worker/README.md`
+- **API Documentation**: http://localhost:5128/swagger
+- **Project README**: See root `README.md`
 
 ---
 
