@@ -244,8 +244,8 @@ export const TaskList = () => {
         </div>
 
         <div className="bg-white rounded-lg shadow-sm p-3 mb-3">
-          <div className="flex gap-2 items-center flex-wrap">
-            <div className="flex-1 min-w-[200px] relative">
+          <div className="flex gap-2 items-center">
+            <div className="w-80 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
                 type="text"
@@ -255,30 +255,9 @@ export const TaskList = () => {
                 className="w-full pl-9 pr-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
             </div>
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border rounded-lg transition ${
-                showFilters 
-                  ? 'bg-indigo-50 border-indigo-300 text-indigo-700' 
-                  : 'border-gray-300 hover:bg-gray-50'
-              }`}
-            >
-              <Filter className="w-4 h-4" />
-              Filters
-            </button>
-            <button
-              onClick={resetFilters}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition text-gray-700"
-              title="Reset all filters"
-            >
-              <RotateCcw className="w-4 h-4" />
-              Reset
-            </button>
-          </div>
 
-          {showFilters && (
-            <div className="mt-3 pt-3 border-t">
-              <div className="flex gap-2 items-center flex-wrap">
+            {showFilters && (
+              <div className="flex gap-2 items-center flex-1 overflow-x-auto">
                 <select
                   value={filters.status ?? ''}
                   onChange={(e) => setFilters({ ...filters, status: e.target.value ? Number(e.target.value) : undefined, pageNumber: 1 })}
@@ -308,7 +287,7 @@ export const TaskList = () => {
                   placeholder="Tag..."
                   value={filters.tag ?? ''}
                   onChange={(e) => setFilters({ ...filters, tag: e.target.value || undefined, pageNumber: 1 })}
-                  className="w-28 px-2.5 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                  className="w-36 px-2.5 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
                 />
 
                 <input
@@ -355,8 +334,30 @@ export const TaskList = () => {
                   </button>
                 </div>
               </div>
+            )}
+
+            <div className="ml-auto flex gap-2">
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border rounded-lg transition ${
+                  showFilters 
+                    ? 'bg-indigo-50 border-indigo-300 text-indigo-700' 
+                    : 'border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                <Filter className="w-4 h-4" />
+                Filters
+              </button>
+              <button
+                onClick={resetFilters}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition text-gray-700"
+                title="Reset all filters"
+              >
+                <RotateCcw className="w-4 h-4" />
+                Reset
+              </button>
             </div>
-          )}
+          </div>
         </div>
 
         {loading ? (

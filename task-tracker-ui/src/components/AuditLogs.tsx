@@ -128,8 +128,8 @@ export const AuditLogs = () => {
 
         {/* Search and Filter Bar */}
         <div className="bg-white rounded-lg shadow-sm p-3 mb-3">
-          <div className="flex gap-2 items-center flex-wrap">
-            <div className="flex-1 min-w-[200px] relative">
+          <div className="flex gap-2 items-center">
+            <div className="w-80 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
                 type="text"
@@ -140,47 +140,14 @@ export const AuditLogs = () => {
               />
             </div>
 
-            <button
-              onClick={handleRefresh}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-              title="Refresh audit logs"
-            >
-              <RotateCcw className="w-4 h-4" />
-              <span className="hidden sm:inline">Refresh</span>
-            </button>
-
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border rounded-lg transition ${
-                showFilters
-                  ? 'bg-purple-50 border-purple-300 text-purple-700'
-                  : 'border-gray-300 hover:bg-gray-50'
-              }`}
-            >
-              <Filter className="w-4 h-4" />
-              Filters
-            </button>
-
-            <button
-              onClick={clearFilters}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition text-gray-700"
-              title="Clear all filters"
-            >
-              <RotateCcw className="w-4 h-4" />
-              Clear
-            </button>
-          </div>
-
-          {/* Advanced Filters */}
-          {showFilters && (
-            <div className="mt-3 pt-3 border-t">
-              <div className="flex gap-2 items-center flex-wrap">
+            {showFilters && (
+              <div className="flex gap-2 items-center flex-1 overflow-x-auto">
                 <input
                   type="text"
                   placeholder="User Email..."
                   value={filters.userEmail || ''}
                   onChange={(e) => handleFilterChange('userEmail', e.target.value)}
-                  className="w-40 px-2.5 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                  className="w-48 px-2.5 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
                 />
 
                 <select
@@ -225,8 +192,40 @@ export const AuditLogs = () => {
                   title="Date To"
                 />
               </div>
+            )}
+
+            <div className="ml-auto flex gap-2">
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border rounded-lg transition ${
+                  showFilters
+                    ? 'bg-purple-50 border-purple-300 text-purple-700'
+                    : 'border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                <Filter className="w-4 h-4" />
+                Filters
+              </button>
+
+              <button
+                onClick={clearFilters}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition text-gray-700"
+                title="Clear all filters"
+              >
+                <RotateCcw className="w-4 h-4" />
+                Clear
+              </button>
+
+              <button
+                onClick={handleRefresh}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                title="Refresh audit logs"
+              >
+                <RotateCcw className="w-4 h-4" />
+                <span className="hidden sm:inline">Refresh</span>
+              </button>
             </div>
-          )}
+          </div>
         </div>
 
         {/* Results Count */}
