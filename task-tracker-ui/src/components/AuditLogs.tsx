@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auditLogApi } from '../api/auditLogApi';
 import { AuditLogListDto, AuditLogFilters } from '../types';
-import { ArrowLeft, Search, Filter, ChevronLeft, ChevronRight, Calendar, User, FileText, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Search, Filter, ChevronLeft, ChevronRight, FileText, RotateCcw } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export const AuditLogs = () => {
@@ -127,74 +127,66 @@ export const AuditLogs = () => {
         </div>
 
         {/* Search and Filter Bar */}
-        <div className="bg-white rounded-lg shadow-md p-3 mb-3">
-          <div className="flex flex-col md:flex-row gap-4">
-            {/* Search */}
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+        <div className="bg-white rounded-lg shadow-sm p-3 mb-3">
+          <div className="flex gap-2 items-center flex-wrap">
+            <div className="flex-1 min-w-[200px] relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
                 type="text"
-                placeholder="Search by user, action, or details..."
+                placeholder="Search..."
                 value={filters.searchTerm || ''}
                 onChange={(e) => handleSearchChange(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full pl-9 pr-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               />
             </div>
 
-            <div className="flex gap-2">
-              {/* Refresh Button */}
-              <button
-                onClick={handleRefresh}
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                title="Refresh audit logs"
-              >
-                <RotateCcw className="w-5 h-5" />
-                <span className="hidden sm:inline">Refresh</span>
-              </button>
+            <button
+              onClick={handleRefresh}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              title="Refresh audit logs"
+            >
+              <RotateCcw className="w-4 h-4" />
+              <span className="hidden sm:inline">Refresh</span>
+            </button>
 
-              {/* Filter Toggle */}
-              <button
-                onClick={() => setShowFilters(!showFilters)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                  showFilters
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                <Filter className="w-5 h-5" />
-                Filters
-              </button>
-            </div>
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border rounded-lg transition ${
+                showFilters
+                  ? 'bg-purple-50 border-purple-300 text-purple-700'
+                  : 'border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              <Filter className="w-4 h-4" />
+              Filters
+            </button>
+
+            <button
+              onClick={clearFilters}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition text-gray-700"
+              title="Clear all filters"
+            >
+              <RotateCcw className="w-4 h-4" />
+              Clear
+            </button>
           </div>
 
           {/* Advanced Filters */}
           {showFilters && (
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t">
-              {/* User Email Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  <User className="w-4 h-4 inline mr-1" />
-                  User Email
-                </label>
+            <div className="mt-3 pt-3 border-t">
+              <div className="flex gap-2 items-center flex-wrap">
                 <input
                   type="text"
-                  placeholder="Filter by email..."
+                  placeholder="User Email..."
                   value={filters.userEmail || ''}
                   onChange={(e) => handleFilterChange('userEmail', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+                  className="w-40 px-2.5 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
                 />
-              </div>
 
-              {/* Entity Type Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  <FileText className="w-4 h-4 inline mr-1" />
-                  Entity Type
-                </label>
                 <select
                   value={filters.entityType || ''}
                   onChange={(e) => handleFilterChange('entityType', e.target.value || undefined)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+                  className="px-2.5 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
                 >
                   <option value="">All Types</option>
                   {entityTypes.map((type) => (
@@ -203,15 +195,11 @@ export const AuditLogs = () => {
                     </option>
                   ))}
                 </select>
-              </div>
 
-              {/* Action Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Action</label>
                 <select
                   value={filters.action || ''}
                   onChange={(e) => handleFilterChange('action', e.target.value || undefined)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+                  className="px-2.5 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
                 >
                   <option value="">All Actions</option>
                   {actions.map((action) => (
@@ -220,44 +208,22 @@ export const AuditLogs = () => {
                     </option>
                   ))}
                 </select>
-              </div>
 
-              {/* Date From */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  <Calendar className="w-4 h-4 inline mr-1" />
-                  Date From
-                </label>
                 <input
                   type="date"
                   value={filters.dateFrom || ''}
                   onChange={(e) => handleFilterChange('dateFrom', e.target.value || undefined)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+                  className="px-2.5 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                  title="Date From"
                 />
-              </div>
 
-              {/* Date To */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  <Calendar className="w-4 h-4 inline mr-1" />
-                  Date To
-                </label>
                 <input
                   type="date"
                   value={filters.dateTo || ''}
                   onChange={(e) => handleFilterChange('dateTo', e.target.value || undefined)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+                  className="px-2.5 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                  title="Date To"
                 />
-              </div>
-
-              {/* Clear Filters */}
-              <div className="flex items-end">
-                <button
-                  onClick={clearFilters}
-                  className="w-full px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium"
-                >
-                  Clear Filters
-                </button>
               </div>
             </div>
           )}
